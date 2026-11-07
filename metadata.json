@@ -1,0 +1,6 @@
+{
+  "name": "X-5 SMAGA",
+  "description": "Aplikasi jadwal pelajaran, tugas & pengingat, dan buku kas untuk siswa Kelas X-5 SMA Negeri 3 Jombang.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

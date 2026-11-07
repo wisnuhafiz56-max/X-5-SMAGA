@@ -1,0 +1,3029 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#070709">
+  <meta name="description" content="Aplikasi mobile-friendly monokromatik khusus siswa Kelas X-5 SMA Negeri 3 Jombang. Jadwal pelajaran, pengingat tugas harian & spam per jam, materi/rangkuman PPT, dan buku catatan keuangan pribadi.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>CLASS X.5 • SMAN 3 Jombang</title>
+
+  <!-- PWA Manifest via Data URI -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Class X.5 SMAN 3 Jombang","short_name":"Class X.5","start_url":".","display":"standalone","background_color":"%23070709","theme_color":"%23070709","description":"Jadwal, Tugas & Pengingat Spam, Materi PPT, dan Catatan Keuangan Pribadi Siswa Class X.5","icons":[{"src":"logo.png","sizes":"192x192 512x512","type":"image/png"}]}'>
+  <link rel="icon" type="image/png" href="logo.png">
+
+  <style>
+    /* ==========================================================================
+       THEME: ULTRA SLEEK MONOKROMATIK DARK MODE DENGAN AKSEN LOGO CLASS X.5
+       ========================================================================== */
+    :root {
+      --bg-main: #070709;
+      --bg-card: #0f0f13;
+      --bg-card-hover: #15151b;
+      --bg-surface: #1b1b22;
+      --border-subtle: #24242d;
+      --border-focus: #4b4b57;
+      --text-primary: #f4f4f6;
+      --text-secondary: #9fa0aa;
+      --text-muted: #6b6c77;
+      --badge-bg: #22222a;
+      --badge-text: #e4e4e9;
+      --accent-white: #ffffff;
+      --accent-glow: rgba(255, 255, 255, 0.08);
+      --danger-border: #7f1d1d;
+      --danger-bg: #1c0e10;
+      --danger-text: #fca5a5;
+      --warning-border: #854d0e;
+      --warning-bg: #1a1409;
+      --warning-text: #fde047;
+      --success-border: #14532d;
+      --success-bg: #0b1a0f;
+      --success-text: #86efac;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 4px 14px rgba(0,0,0,0.5);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding-bottom: 92px; /* space for bottom navigation */
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 14px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* App Header with Class X.5 Logo */
+    header.app-header {
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-img {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    .brand-info h1 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      color: var(--accent-white);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-info p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+    }
+    .header-status-badge.weekend {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+    }
+    .header-status-badge.school {
+      background: #142718;
+      border-color: #1e4526;
+      color: #86efac;
+    }
+
+    .icon-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover, .icon-btn:active {
+      background: var(--border-subtle);
+      border-color: var(--border-focus);
+    }
+
+    .icon-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+    }
+
+    /* Top Time & Status Banner */
+    .time-banner {
+      background: linear-gradient(180deg, var(--bg-card), #0b0b0e);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-white);
+      margin-right: 6px;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+      animation: pulseAnim 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .live-clock {
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.8px;
+    }
+
+    /* Weekend Indicator Banner */
+    .weekend-banner {
+      background: linear-gradient(135deg, #131318 0%, #1a1a24 100%);
+      border: 1px solid #2e2e3a;
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .weekend-icon {
+      font-size: 26px;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .weekend-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-white);
+      margin-bottom: 4px;
+    }
+
+    .weekend-text p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    /* Tab Contents */
+    .tab-content {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .tab-content.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Day Selector Tabs */
+    .day-selector {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .day-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .day-pill span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .day-pill .sub-tag {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .day-pill:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-focus);
+    }
+
+    .day-pill.active {
+      background: var(--accent-white);
+      border-color: var(--accent-white);
+      box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .day-pill.active span {
+      color: var(--bg-main);
+      font-weight: 800;
+    }
+
+    .day-pill.active .sub-tag {
+      color: #333333;
+    }
+
+    .day-pill.is-today {
+      position: relative;
+    }
+
+    .day-pill.is-today::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 3px;
+      background: var(--accent-white);
+      border-radius: var(--radius-full);
+    }
+
+    /* Cards & Schedule Items */
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-white);
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .time-badge {
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .schedule-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .schedule-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .schedule-item.ongoing {
+      border-color: var(--accent-white);
+      background: linear-gradient(180deg, #181820 0%, #101014 100%);
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.12);
+    }
+
+    .schedule-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .subject-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.2px;
+    }
+
+    .teacher-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .teacher-meta svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .status-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    .status-tag.active {
+      background: #142718;
+      color: #86efac;
+      border: 1px solid #1e4526;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Notification & Control Cards in Tab 2 */
+    .control-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .control-info {
+      flex: 1;
+    }
+
+    .control-info h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-white);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-info p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin-top: 3px;
+    }
+
+    /* Custom Switch Toggle */
+    .custom-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .custom-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--text-muted);
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--accent-white);
+      border-color: var(--accent-white);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: var(--bg-main);
+    }
+
+    .perm-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .perm-badge.granted { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+    .perm-badge.denied { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+    .perm-badge.default { background: var(--badge-bg); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-block { width: 100%; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: var(--radius-sm); }
+
+    .btn-primary {
+      background: var(--accent-white);
+      color: var(--bg-main);
+      border-color: var(--accent-white);
+    }
+    .btn-primary:hover, .btn-primary:active {
+      background: #e4e4e7;
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+    }
+    .btn-secondary:hover, .btn-secondary:active {
+      background: var(--border-subtle);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-primary);
+      border-color: var(--border-subtle);
+    }
+    .btn-outline:hover, .btn-outline:active {
+      border-color: var(--text-secondary);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-color: var(--danger-border);
+    }
+
+    /* Tasks Stats & Filter */
+    .task-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .stat-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent-white);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .filter-chip.active {
+      background: var(--accent-white);
+      color: var(--bg-main);
+      border-color: var(--accent-white);
+      font-weight: 700;
+    }
+
+    /* Task List & Card */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .task-card.overdue {
+      border-left: 4px solid #ef4444;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, var(--bg-card) 60%);
+    }
+
+    .task-card.urgent-today {
+      border-left: 4px solid #f59e0b;
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, var(--bg-card) 60%);
+    }
+
+    .task-card.completed {
+      opacity: 0.5;
+      border-color: var(--border-subtle);
+    }
+
+    .task-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--border-focus);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-top: 2px;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .task-checkbox.checked {
+      background: var(--accent-white);
+      border-color: var(--accent-white);
+    }
+
+    .task-checkbox svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--bg-main);
+      stroke-width: 3;
+      display: none;
+    }
+
+    .task-checkbox.checked svg {
+      display: block;
+    }
+
+    .task-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .task-meta-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .task-subject {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .task-countdown {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .task-countdown.overdue {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-color: var(--danger-border);
+      animation: pulseAnim 1.5s infinite;
+    }
+
+    .task-countdown.urgent {
+      background: var(--warning-bg);
+      color: var(--warning-text);
+      border-color: var(--warning-border);
+    }
+
+    .task-text-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .task-card.completed .task-text-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .task-notes {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .task-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .delete-btn:hover { color: var(--danger-text); }
+    .delete-btn svg { width: 14px; height: 14px; stroke: currentColor; }
+
+    /* Material / PPT / Document Cards */
+    .search-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-input-box svg {
+      position: absolute;
+      left: 12px;
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-muted);
+    }
+    .search-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 14px 10px 38px;
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+      transition: border 0.2s ease;
+    }
+    .search-input:focus { border-color: var(--accent-white); }
+
+    .material-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .material-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .file-type-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+      border: 1px solid var(--border-subtle);
+    }
+    .file-type-icon.ppt { background: #2a110a; color: #fb923c; border-color: #7c2d12; }
+    .file-type-icon.pdf { background: #280a0a; color: #f87171; border-color: #7f1d1d; }
+    .file-type-icon.doc { background: #0a1728; color: #60a5fa; border-color: #1e3a8a; }
+    .file-type-icon.text { background: #1a1a24; color: #cbd5e1; border-color: #334155; }
+    .file-type-icon.img { background: #172514; color: #4ade80; border-color: #166534; }
+
+    .material-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .material-top-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .material-subject {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-secondary);
+    }
+
+    .material-date {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .material-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .material-filename {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+      word-break: break-all;
+    }
+
+    .material-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--bg-surface);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      line-height: 1.4;
+    }
+
+    .material-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 10px;
+    }
+
+    /* Kas Pribadi Cards & Stats */
+    .kas-summary-card {
+      background: linear-gradient(145deg, #131317 0%, #0d0d10 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .kas-balance-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kas-balance-amount {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--accent-white);
+      letter-spacing: -0.5px;
+    }
+
+    .kas-flow-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .flow-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .flow-item .label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .flow-item .val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .kas-tools-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .kas-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .kas-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .kas-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .kas-desc {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .kas-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .kas-item-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .kas-amount {
+      font-size: 14px;
+      font-weight: 800;
+      font-family: monospace;
+    }
+
+    .kas-amount.income { color: #86efac; }
+    .kas-amount.expense { color: #fca5a5; }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(9, 9, 12, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-inner {
+      max-width: 540px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .nav-item {
+      background: transparent;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+    }
+
+    .nav-item span {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .nav-item.active {
+      color: var(--accent-white);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--accent-white);
+      transform: translateY(-1px);
+    }
+
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 20px;
+      height: 2px;
+      background: var(--accent-white);
+      border-radius: var(--radius-full);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+      animation: fadeInModal 0.2s ease-out;
+    }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-container {
+      background: #111116;
+      border: 1px solid var(--border-subtle);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      width: 100%;
+      max-width: 540px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px 18px 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      animation: slideUp 0.25s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+    }
+
+    .modal-header h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-white);
+    }
+
+    .close-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-control {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-white);
+    }
+
+    .type-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .type-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .type-btn.active {
+      background: var(--accent-white);
+      color: var(--bg-main);
+      border-color: var(--accent-white);
+      font-weight: 700;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border-focus);
+      background: var(--bg-surface);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .drop-zone svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--text-muted);
+    }
+
+    .drop-zone p { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+    .drop-zone span { font-size: 10px; color: var(--text-muted); }
+
+    .selected-file-badge {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border-focus);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--text-primary);
+      margin-top: 8px;
+    }
+
+    /* Document Viewer Modal */
+    .doc-viewer-frame {
+      width: 100%;
+      height: 380px;
+      background: #141418;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .doc-viewer-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .toast {
+      background: #18181f;
+      border: 1px solid var(--border-focus);
+      color: var(--text-primary);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: toastIn 0.25s ease-out;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .empty-state {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 30px 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="app-container">
+    <!-- APP HEADER -->
+    <header class="app-header">
+      <div class="brand-box">
+        <img src="logo.png" alt="Class X.5 Logo" class="brand-logo-img">
+        <div class="brand-info">
+          <h1>CLASS X.5</h1>
+          <p>SMA Negeri 3 Jombang</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="header-status-badge school" id="headerStatusBadge">Memuat...</span>
+        <button class="icon-btn" id="btnTestNotif" title="Tes Notifikasi & Suara Alarm" onclick="triggerUrgentNotificationTest()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </button>
+        <button class="icon-btn" id="btnBackup" title="Cadangkan Data" onclick="openBackupModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- LIVE TIME BANNER -->
+    <div class="time-banner">
+      <div><span class="pulse-dot"></span><span id="currentDayText">Memuat hari...</span></div>
+      <div class="live-clock" id="liveClock">00:00:00</div>
+    </div>
+
+    <!-- TAB 1: JADWAL PELAJARAN -->
+    <main id="tabSchedule" class="tab-content active">
+      <!-- Weekend Alert Box (Dynamically shown on Saturday & Sunday) -->
+      <div class="weekend-banner" id="weekendBannerBox" style="display: none;"></div>
+
+      <div class="day-selector" id="daySelector">
+        <div class="day-pill" data-day="SENIN" onclick="selectDay('SENIN')"><span>Senin</span><span class="sub-tag">5 Mapel</span></div>
+        <div class="day-pill" data-day="SELASA" onclick="selectDay('SELASA')"><span>Selasa</span><span class="sub-tag">5 Mapel</span></div>
+        <div class="day-pill" data-day="RABU" onclick="selectDay('RABU')"><span>Rabu</span><span class="sub-tag">4 Mapel</span></div>
+        <div class="day-pill" data-day="KAMIS" onclick="selectDay('KAMIS')"><span>Kamis</span><span class="sub-tag">4 Mapel</span></div>
+        <div class="day-pill" data-day="JUMAT" onclick="selectDay('JUMAT')"><span>Jum'at</span><span class="sub-tag">4 Mapel</span></div>
+      </div>
+
+      <div class="card-title-row">
+        <span class="card-title" id="scheduleTitleLabel">Jadwal Hari Ini</span>
+        <span class="time-badge" id="scheduleCountBadge">0 Mapel</span>
+      </div>
+
+      <div class="schedule-list" id="scheduleListContainer"></div>
+    </main>
+
+    <!-- TAB 2: TUGAS & PENGINGAT (SPAM & DND) -->
+    <main id="tabTasks" class="tab-content">
+      <!-- 1. Notification Permission Status -->
+      <div class="control-card">
+        <div class="control-row">
+          <div class="control-info">
+            <h4>Izin Notifikasi HP</h4>
+            <p>Wajib aktif agar sistem dapat mengirimkan alarm pengingat tugas ke status bar ponsel.</p>
+          </div>
+          <span class="perm-badge default" id="permBadge">Cek Izin...</span>
+        </div>
+        <button class="btn btn-primary btn-sm btn-block" id="btnRequestNotif" onclick="requestNotificationPermission()">
+          Aktifkan / Periksa Izin Notifikasi
+        </button>
+      </div>
+
+      <!-- 2. Hourly Nagging / Spam Reminder Switch -->
+      <div class="control-card">
+        <div class="control-row">
+          <div class="control-info">
+            <h4>🚨 Mode Spam Pengingat Tiap 1 Jam</h4>
+            <p>Otomatis spam notifikasi bersuara & bergetar setiap 1 jam jika ada tugas yang belum ditandai Selesai.</p>
+          </div>
+          <label class="custom-switch">
+            <input type="checkbox" id="toggleHourlySpam" onchange="toggleHourlySpam(this.checked)" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary btn-sm btn-block" onclick="triggerHourlyNagTest()">
+            ⚡ Tes Notifikasi Spam Sekarang
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. Daily Routine Reminder -->
+      <div class="control-card">
+        <div class="control-row">
+          <div class="control-info">
+            <h4>⏰ Pengingat Rutin Harian</h4>
+            <p>Briefing jadwal pelajaran dan pengecekan tugas otomatis setiap hari.</p>
+          </div>
+          <label class="custom-switch">
+            <input type="checkbox" id="toggleDailyRoutine" onchange="toggleDailyRoutine(this.checked)" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+          <span style="font-size: 12px; color: var(--text-secondary);">Waktu Pengingat Harian:</span>
+          <select id="selectDailyRoutineTime" class="form-control" style="padding: 4px 8px; width: auto; font-size: 12px;" onchange="updateDailyRoutineTime(this.value)">
+            <option value="06:00">Pukul 06.00 WIB (Pagi)</option>
+            <option value="06.30">Pukul 06.30 WIB (Pagi)</option>
+            <option value="19:00">Pukul 19.00 WIB (Malam)</option>
+            <option value="19:30">Pukul 19.30 WIB (Malam)</option>
+            <option value="20:00">Pukul 20.00 WIB (Malam)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 4. Bypass Do Not Disturb (DND) Setting Card -->
+      <div class="control-card">
+        <div class="control-row">
+          <div class="control-info">
+            <h4>🔕 Abaikan Fitur "Jangan Ganggu" (DND)</h4>
+            <p>Pengingat telah disetel ke Kategori ALARM prioritas tertinggi agar dapat menembus mode Jangan Ganggu di HP Android.</p>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm btn-block" onclick="openDndChannelSettings()">
+          ⚙️ Buka Pengaturan Jangan Ganggu di HP
+        </button>
+      </div>
+
+      <!-- Task Stats -->
+      <div class="task-stats-grid">
+        <div class="stat-box"><div class="stat-number" id="statTotalTasks">0</div><div class="stat-label">Total</div></div>
+        <div class="stat-box"><div class="stat-number" id="statPendingTasks" style="color: #fca5a5;">0</div><div class="stat-label">Belum Selesai</div></div>
+        <div class="stat-box"><div class="stat-number" id="statDoneTasks" style="color: #86efac;">0</div><div class="stat-label">Selesai</div></div>
+      </div>
+
+      <!-- Filter & Add Button -->
+      <div class="card-title-row">
+        <div class="filter-bar">
+          <button class="filter-chip active" onclick="setTaskFilter('all', this)">Semua</button>
+          <button class="filter-chip" onclick="setTaskFilter('pending', this)">Belum Selesai</button>
+          <button class="filter-chip" onclick="setTaskFilter('done', this)">Selesai</button>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()">+ Tambah Tugas</button>
+      </div>
+
+      <!-- Task List Container -->
+      <div class="task-list" id="taskListContainer"></div>
+    </main>
+
+    <!-- TAB 3: MATERI PPT & RANGKUMAN (BUKA PDF/PPT) -->
+    <main id="tabMaterials" class="tab-content">
+      <div class="search-input-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="materialSearchInput" class="search-input" placeholder="Cari materi, PPT, atau rangkuman..." oninput="handleMaterialSearch(this.value)">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-primary btn-sm btn-block" onclick="openAddMaterialModal('file')">Upload PPT / Dokumen</button>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="openAddMaterialModal('text')">Tulis Rangkuman</button>
+      </div>
+
+      <div class="filter-bar" id="materialFilterBar">
+        <button class="filter-chip active" onclick="setMaterialSubjectFilter('ALL', this)">Semua Mapel</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('Biologi', this)">Biologi</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('Matematika', this)">Matematika</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('Fisika', this)">Fisika</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('Kimia', this)">Kimia</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('Informatika', this)">Informatika</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('Sejarah', this)">Sejarah</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('Ekonomi', this)">Ekonomi</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('B. Indonesia', this)">B. Indonesia</button>
+        <button class="filter-chip" onclick="setMaterialSubjectFilter('Bahasa Inggris', this)">B. Inggris</button>
+      </div>
+
+      <div class="card-title-row">
+        <span class="card-title">Daftar Rangkuman & PPT</span>
+        <span class="time-badge" id="materialCountBadge">0 Dokumen</span>
+      </div>
+
+      <div class="schedule-list" id="materialListContainer"></div>
+    </main>
+
+    <!-- TAB 4: KEUANGAN PRIBADI SISWA (BUKU KAS PRIBADI & SPREADSHEET) -->
+    <main id="tabKas" class="tab-content">
+      <div class="kas-summary-card">
+        <div class="kas-balance-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+          Sisa Saldo Dompet Pribadi
+        </div>
+        <div class="kas-balance-amount" id="kasBalanceText">Rp 0</div>
+        <div class="kas-flow-row">
+          <div class="flow-item">
+            <span class="label">Total Uang Masuk</span>
+            <span class="val" id="kasTotalIncomeText" style="color: #86efac;">Rp 0</span>
+          </div>
+          <div class="flow-item">
+            <span class="label">Total Pengeluaran</span>
+            <span class="val" id="kasTotalExpenseText" style="color: #fca5a5;">Rp 0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kas-tools-bar">
+        <button class="btn btn-primary btn-sm btn-block" onclick="openAddKasModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Catat Keuangan
+        </button>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="openSpreadsheetModal()">
+          Spreadsheet (CSV/Excel)
+        </button>
+      </div>
+
+      <div class="card-title-row">
+        <div class="filter-bar">
+          <button class="filter-chip active" onclick="setKasFilter('all', this)">Semua</button>
+          <button class="filter-chip" onclick="setKasFilter('income', this)">Uang Masuk</button>
+          <button class="filter-chip" onclick="setKasFilter('expense', this)">Uang Keluar</button>
+        </div>
+        <span class="time-badge" id="kasCountBadge">0 Catatan</span>
+      </div>
+
+      <div class="kas-list" id="kasListContainer"></div>
+    </main>
+  </div>
+
+  <!-- BOTTOM NAVIGATION (4 TABS) -->
+  <nav class="bottom-nav">
+    <div class="nav-inner">
+      <button class="nav-item active" onclick="switchTab('tabSchedule', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Jadwal</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('tabTasks', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span>Tugas</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('tabMaterials', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Materi PPT</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('tabKas', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+        <span>Keuangan</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MODAL BUKA / LIHAT DOKUMEN (PDF & PPT) -->
+  <div class="modal-backdrop" id="modalViewDocument" onclick="closeModalOnBackdrop(event, 'modalViewDocument')">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="docModalTitle">Buka Dokumen</h3>
+        <button class="close-btn" onclick="closeModal('modalViewDocument')">✕</button>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <span class="time-badge" id="docModalSubject">Mapel</span>
+        <span class="status-tag active" id="docModalSize">Ukuran</span>
+      </div>
+      <div id="docViewerContainer">
+        <!-- Will contain iframe for PDF or info box for PPT/DOC -->
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button type="button" class="btn btn-primary btn-block" id="btnLaunchExternalDoc">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          Buka di Aplikasi Luar (WPS Office / Acrobat / Drive)
+        </button>
+        <button type="button" class="btn btn-secondary btn-block" id="btnDownloadDoc">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Unduh File Dokumen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL BACA RANGKUMAN TEKS -->
+  <div class="modal-backdrop" id="modalViewSummary" onclick="closeModalOnBackdrop(event, 'modalViewSummary')">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="viewSummaryTitle">Rangkuman Materi</h3>
+        <button class="close-btn" onclick="closeModal('modalViewSummary')">✕</button>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <span class="time-badge" id="viewSummarySubject">Mapel</span>
+        <span class="status-tag" id="viewSummaryDate">Tanggal</span>
+      </div>
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; color: var(--text-primary); font-size: 13px; line-height: 1.6; white-space: pre-wrap; max-height: 50vh; overflow-y: auto;" id="viewSummaryBody"></div>
+      <button type="button" class="btn btn-secondary btn-block" onclick="closeModal('modalViewSummary')">Tutup</button>
+    </div>
+  </div>
+
+  <!-- MODAL UPLOAD MATERI / PPT -->
+  <div class="modal-backdrop" id="modalAddMaterial" onclick="closeModalOnBackdrop(event, 'modalAddMaterial')">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="modalMaterialTitle">Upload Materi / PPT</h3>
+        <button class="close-btn" onclick="closeModal('modalAddMaterial')">✕</button>
+      </div>
+      <div class="type-selector">
+        <button type="button" class="type-btn active" id="btnModeFile" onclick="setMaterialMode('file')">Upload File (PPT/PDF)</button>
+        <button type="button" class="type-btn" id="btnModeText" onclick="setMaterialMode('text')">Tulis Rangkuman</button>
+      </div>
+      <form id="formAddMaterial" onsubmit="handleAddMaterial(event)">
+        <div class="form-group">
+          <label>Judul Materi / Rangkuman *</label>
+          <input type="text" id="materialTitle" class="form-control" placeholder="Contoh: PPT Bab 2 Struktur Sel" required>
+        </div>
+        <div class="form-group">
+          <label>Mata Pelajaran *</label>
+          <select id="materialSubject" class="form-control" required>
+            <option value="">Pilih Mapel...</option>
+            <option value="Biologi">Biologi</option><option value="Matematika">Matematika</option><option value="Fisika">Fisika</option><option value="Kimia">Kimia</option><option value="Informatika">Informatika</option><option value="Geografi">Geografi</option><option value="Ekonomi">Ekonomi</option><option value="Sejarah">Sejarah</option><option value="Sosiologi">Sosiologi</option><option value="B. Indonesia">B. Indonesia</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Bahasa Jawa">Bahasa Jawa</option><option value="P. Pancasila">P. Pancasila</option><option value="PAI">PAI</option><option value="PJOK">PJOK</option><option value="Seni Budaya">Seni Budaya</option><option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div id="sectionFileUpload" class="form-group">
+          <label>Pilih File Presentasi (PPT) / Dokumen *</label>
+          <div class="drop-zone" id="materialDropZone" onclick="document.getElementById('materialFileInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <p>Ketuk untuk memilih file PPT / PDF / Dokumen</p>
+            <span>Mendukung: .ppt, .pptx, .pdf, .doc, .docx, .png, .jpg</span>
+          </div>
+          <input type="file" id="materialFileInput" style="display: none;" accept=".ppt,.pptx,.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.zip" onchange="handleFileSelected(this)">
+          <div class="selected-file-badge" id="selectedFileBadge">
+            <span id="selectedFileName">Nama file</span>
+            <button type="button" class="close-btn" onclick="clearSelectedFile(event)">✕</button>
+          </div>
+        </div>
+        <div id="sectionTextNotes" class="form-group" style="display: none;">
+          <label>Isi Catatan / Rangkuman Pelajaran *</label>
+          <textarea id="materialTextContent" class="form-control" rows="6" placeholder="Tuliskan rangkuman materi di sini..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Catatan / Keterangan Singkat</label>
+          <input type="text" id="materialNotes" class="form-control" placeholder="Contoh: Dari Drs. Ali Akhmat Makhali, M.Pd">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Simpan ke Materi Kelas X-5</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL TAMBAH TUGAS -->
+  <div class="modal-backdrop" id="modalAddTask" onclick="closeModalOnBackdrop(event, 'modalAddTask')">
+    <div class="modal-container">
+      <div class="modal-header"><h3>Tambah Tugas Baru</h3><button class="close-btn" onclick="closeModal('modalAddTask')">✕</button></div>
+      <form id="formAddTask" onsubmit="handleAddTask(event)">
+        <div class="form-group"><label>Judul Tugas / PR *</label><input type="text" id="taskTitle" class="form-control" placeholder="Contoh: Latihan Bab 3 Trigonometri" required></div>
+        <div class="form-group"><label>Mata Pelajaran *</label><select id="taskSubject" class="form-control" required><option value="">Pilih Mapel...</option><option value="Matematika">Matematika</option><option value="B. Indonesia">B. Indonesia</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Biologi">Biologi</option><option value="Fisika">Fisika</option><option value="Kimia">Kimia</option><option value="Informatika">Informatika</option><option value="Geografi">Geografi</option><option value="Ekonomi">Ekonomi</option><option value="Sejarah">Sejarah</option><option value="Sosiologi">Sosiologi</option><option value="Bahasa Jawa">Bahasa Jawa</option><option value="P. Pancasila">P. Pancasila</option><option value="PAI">PAI</option><option value="PJOK">PJOK</option><option value="Seni Budaya">Seni Budaya</option><option value="BK">BK</option><option value="Lainnya">Lainnya</option></select></div>
+        <div class="form-group"><label>Tenggat Waktu (Deadline) *</label><input type="datetime-local" id="taskDeadline" class="form-control" required></div>
+        <div class="form-group"><label>Catatan Tambahan</label><textarea id="taskNotes" class="form-control" rows="2" placeholder="Catatan tugas"></textarea></div>
+        <button type="submit" class="btn btn-primary btn-block">Simpan Tugas</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL CATAT KEUANGAN PRIBADI -->
+  <div class="modal-backdrop" id="modalAddKas" onclick="closeModalOnBackdrop(event, 'modalAddKas')">
+    <div class="modal-container">
+      <div class="modal-header"><h3>Catat Keuangan Pribadi</h3><button class="close-btn" onclick="closeModal('modalAddKas')">✕</button></div>
+      <form id="formAddKas" onsubmit="handleAddKas(event)">
+        <div class="form-group">
+          <label>Jenis Transaksi *</label>
+          <div class="type-selector">
+            <button type="button" class="type-btn active" id="btnTypeIncome" onclick="setKasType('income')">+ Uang Masuk</button>
+            <button type="button" class="type-btn" id="btnTypeExpense" onclick="setKasType('expense')">- Uang Keluar</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nominal (Rp) *</label>
+          <input type="number" id="kasAmount" class="form-control" placeholder="Contoh: 15000" min="500" step="500" required>
+        </div>
+        <div class="form-group">
+          <label>Keterangan *</label>
+          <input type="text" id="kasDesc" class="form-control" placeholder="Contoh: Makan siang kantin / Beli bensin motor" required>
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="kasCategory" class="form-control">
+            <option value="Uang Saku / Jajan (Ortu)">Uang Saku / Jajan (Ortu)</option>
+            <option value="Makan & Minum / Kantin">Makan & Minum / Kantin</option>
+            <option value="Transportasi / Bensin">Transportasi / Bensin</option>
+            <option value="Alat Tulis / Buku / Fotokopi">Alat Tulis / Buku / Fotokopi</option>
+            <option value="Bayar Kas Kelas & Sekolah">Bayar Kas Kelas & Sekolah</option>
+            <option value="Pulsa & Paket Data">Pulsa & Paket Data</option>
+            <option value="Hadiah / THR / Rezeki">Hadiah / THR / Rezeki</option>
+            <option value="Tabungan Diambil">Tabungan Diambil</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tanggal Transaksi</label>
+          <input type="date" id="kasDate" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Simpan Catatan Keuangan</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL SPREADSHEET KEUANGAN PRIBADI -->
+  <div class="modal-backdrop" id="modalSpreadsheet" onclick="closeModalOnBackdrop(event, 'modalSpreadsheet')">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Spreadsheet Keuangan Pribadi</h3>
+        <button class="close-btn" onclick="closeModal('modalSpreadsheet')">✕</button>
+      </div>
+
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">1. Unduh Spreadsheet (.CSV / Excel)</h4>
+        <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Ekspor seluruh transaksi dompet pribadimu menjadi file spreadsheet yang siap dibuka di Microsoft Excel atau Google Sheets.</p>
+        <button class="btn btn-primary btn-sm btn-block" onclick="downloadKasSpreadsheet()">Unduh File Spreadsheet (.CSV)</button>
+      </div>
+
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">2. Salin Format Tabel Google Sheets</h4>
+        <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Salin ke clipboard untuk langsung ditempel (paste) ke Google Sheets di laptop atau HP.</p>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="copyTableForGoogleSheets()">Salin untuk Google Sheets</button>
+      </div>
+
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">3. Upload / Impor Spreadsheet (.CSV)</h4>
+        <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Pilih file spreadsheet untuk memasukkan data secara massal ke dalam dompet pribadimu.</p>
+        <input type="file" id="spreadsheetFileInput" accept=".csv,.txt" style="display: none;" onchange="handleSpreadsheetUpload(this)">
+        <button class="btn btn-outline btn-sm btn-block" onclick="document.getElementById('spreadsheetFileInput').click()">Pilih File Spreadsheet (.CSV)</button>
+        <a href="javascript:void(0)" onclick="downloadKasTemplate()" style="font-size: 11px; color: var(--text-secondary); text-align: center; text-decoration: underline;">Unduh Template Spreadsheet (.CSV)</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CADANGAN (BACKUP / RESTORE) -->
+  <div class="modal-backdrop" id="modalBackup" onclick="closeModalOnBackdrop(event, 'modalBackup')">
+    <div class="modal-container">
+      <div class="modal-header"><h3>Cadangkan & Pulihkan Data</h3><button class="close-btn" onclick="closeModal('modalBackup')">✕</button></div>
+      <p style="font-size: 12px; color: var(--text-secondary);">Salin atau unduh seluruh data tugas, materi, dan catatan keuangan pribadi agar tidak hilang.</p>
+      <textarea id="backupTextarea" class="form-control" rows="8" readonly></textarea>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-primary btn-sm btn-block" onclick="copyBackupData()">Salin JSON</button>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="downloadBackupJson()">Unduh File JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       JADWAL RESMI KELAS X-5 SMA NEGERI 3 JOMBANG
+       ========================================================================== */
+    const SCHEDULE_DATA = {
+      SENIN: [
+        { time: "06.30 - 07.30", startMin: 390, endMin: 450, subject: "Upacara / Literasi / Numerasi", teacher: "Tim Kesiswaan / Wali Kelas", room: "Lapangan / Ruang X-5" },
+        { time: "07.30 - 09.30", startMin: 450, endMin: 570, subject: "PJOK", teacher: "Gagas Bareb Primadinata, S.Pd", room: "Lapangan Olahraga" },
+        { time: "09.50 - 11.40", startMin: 590, endMin: 700, subject: "Bahasa Jawa", teacher: "Siti Rohimatun Sahla, S.Pd", room: "Ruang Kelas X-5" },
+        { time: "11.05 - 13.50", startMin: 665, endMin: 830, subject: "Biologi", teacher: "Drs. Ali Akhmat Makhali, M.Pd", room: "Lab Biologi / Ruang X-5" },
+        { time: "13.15 - 15.00", startMin: 795, endMin: 900, subject: "Geografi", teacher: "Lutmiati, S.Pd", room: "Ruang Kelas X-5" }
+      ],
+      SELASA: [
+        { time: "07.00 - 08.20", startMin: 420, endMin: 500, subject: "Matematika", teacher: "Laora Dessy Andhini, S.Pd", room: "Ruang Kelas X-5" },
+        { time: "08.20 - 09.40", startMin: 500, endMin: 580, subject: "Seni Budaya", teacher: "Hariyati, S.Pd", room: "Ruang Kelas X-5" },
+        { time: "10.00 - 11.20", startMin: 600, endMin: 680, subject: "B. Indonesia / Sosiologi (Sesi 1)", teacher: "Ahmad Zamroni, S.Pd", room: "Ruang Kelas X-5" },
+        { time: "11.20 - 13.40", startMin: 680, endMin: 820, subject: "P. Pancasila", teacher: "Sugiharto, S.Pd", room: "Ruang Kelas X-5" },
+        { time: "13.40 - 14.20", startMin: 820, endMin: 860, subject: "Bimbingan Konseling (BK)", teacher: "Siti Qurotul A'yun, S.Pd.Gr", room: "Ruang BK / X-5" },
+        { time: "14.20 - 15.00", startMin: 860, endMin: 900, subject: "B. Indonesia / Sosiologi (Sesi 2)", teacher: "Ahmad Zamroni, S.Pd", room: "Ruang Kelas X-5" }
+      ],
+      RABU: [
+        { time: "07.00 - 09.00", startMin: 420, endMin: 540, subject: "Bahasa Inggris", teacher: "Ema Sulistiyowati, S.Pd", room: "Ruang Kelas X-5" },
+        { time: "09.00 - 11.20", startMin: 540, endMin: 680, subject: "Fisika", teacher: "Idham Khalid, S.Pd", room: "Lab Fisika / Ruang X-5" },
+        { time: "11.20 - 13.40", startMin: 680, endMin: 820, subject: "Informatika", teacher: "Eriyanti Widyawardhani, S.Pd", room: "Lab Komputer" },
+        { time: "13.40 - 15.00", startMin: 820, endMin: 900, subject: "B. Indonesia", teacher: "Titik Nurkhayati, S.Pd", room: "Ruang Kelas X-5" }
+      ],
+      KAMIS: [
+        { time: "07.00 - 08.20", startMin: 420, endMin: 500, subject: "Matematika", teacher: "Laora Dessy Andhini, S.Pd", room: "Ruang Kelas X-5" },
+        { time: "08.20 - 10.40", startMin: 500, endMin: 640, subject: "Sejarah", teacher: "Dra. Sri Sukarni", room: "Ruang Kelas X-5" },
+        { time: "10.40 - 13.40", startMin: 640, endMin: 820, subject: "Ekonomi", teacher: "Riska Fimiyana, S.E, M.Pd", room: "Ruang Kelas X-5" },
+        { time: "13.40 - 15.00", startMin: 820, endMin: 900, subject: "B. Indonesia", teacher: "Titik Nurkhayati, S.Pd", room: "Ruang Kelas X-5" }
+      ],
+      JUMAT: [
+        { time: "06.30 - 07.30", startMin: 390, endMin: 450, subject: "Agama / Sehat / Bersih / Sedekah", teacher: "Pembina Keagamaan & OSIS", room: "Masjid / Lapangan" },
+        { time: "07.30 - 09.00", startMin: 450, endMin: 540, subject: "Kimia", teacher: "Shofiyah, S.Pd", room: "Lab Kimia / Ruang X-5" },
+        { time: "09.30 - 10.00", startMin: 570, endMin: 600, subject: "Biologi", teacher: "Drs. Ali Akhmat Makhali, M.Pd", room: "Ruang Kelas X-5" },
+        { time: "10.00 - 11.30", startMin: 600, endMin: 690, subject: "PAI", teacher: "Imam Rofi'i, S.HI, S.Pd.I, MH", room: "Masjid / Ruang X-5" }
+      ]
+    };
+
+    /* Minimal valid PDF byte stream (displays Class X.5 document header) */
+    const SAMPLE_MINIMAL_PDF_BASE64 = "JVBERi0xLjQKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgNCAwIFIKL1Jlc291cmNlcyA8PAovRm9udCA8PAovRjEgNSAwIFIKPj4KPj4KPj4KZW5kb2JqCjQgMCBvYmoKPDwKL0xlbmd0aCAxMjkKPj4Kc3RyZWFtCkJUCi9GMSAyNCBUZgoxMDAgNzAwIFRkCihDTEFTUyBYLjUgU01BTiAzIEpPTUJBTkcpIFRqCjAgLTMwIFRkCi9GMSAxNCBUZgooTWF0ZXJpIFJhbmdrdW1hbiAmIFBQVCBTaXN3YSkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovQmFzZUZvbnQgL0hlbHZldGljYQo+PgplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAowMDAwMDAwMjQ5IDAwMDAwIG4gCjAwMDAwMDA0MjkgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA2Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgowMDAwMDAwNTEyCiUlRU9GCg==";
+
+    /* Keys */
+    const STORAGE_KEY_TASKS = "x5_smaga_tasks_v2";
+    const STORAGE_KEY_KAS = "x5_smaga_kas_pribadi_v2";
+    const STORAGE_KEY_MATERIALS_META = "x5_smaga_materials_meta_v2";
+    const STORAGE_KEY_HOURLY_SPAM = "x5_hourly_spam_settings";
+    const STORAGE_KEY_DAILY_ROUTINE = "x5_daily_routine_settings";
+    const IDB_NAME = "x5_materials_files_db";
+    const IDB_STORE = "documents";
+
+    /* IndexedDB for offline documents (PPT, PDF, DOC) */
+    function openIDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            db.createObjectStore(IDB_STORE);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function storeFileInIDB(id, blobOrBuffer) {
+      const db = await openIDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).put(blobOrBuffer, id);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getFileFromIDB(id) {
+      const db = await openIDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, "readonly");
+        const req = tx.objectStore(IDB_STORE).get(id);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function deleteFileFromIDB(id) {
+      const db = await openIDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).delete(id);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    /* Convert Blob to Base64 */
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function base64ToBlob(base64, mimeType = "application/pdf") {
+      const byteChars = atob(base64);
+      const byteNums = new Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteNums[i] = byteChars.charCodeAt(i);
+      }
+      return new Blob([new Uint8Array(byteNums)], { type: mimeType });
+    }
+
+    function getMimeType(fileName) {
+      if (!fileName) return "application/octet-stream";
+      const ext = fileName.split('.').pop().toLowerCase();
+      switch (ext) {
+        case 'pdf': return 'application/pdf';
+        case 'ppt': return 'application/vnd.ms-powerpoint';
+        case 'pptx': return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+        case 'doc': return 'application/msword';
+        case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        case 'png': return 'image/png';
+        case 'jpg':
+        case 'jpeg': return 'image/jpeg';
+        case 'webp': return 'image/webp';
+        case 'txt': return 'text/plain';
+        default: return 'application/octet-stream';
+      }
+    }
+
+    /* Application State */
+    const state = {
+      activeTab: "tabSchedule",
+      selectedDay: "SENIN",
+      isWeekend: false,
+      todayKey: null,
+      taskFilter: "all",
+      kasFilter: "all",
+      materialSubjectFilter: "ALL",
+      materialSearchQuery: "",
+      materialMode: "file",
+      currentKasType: "income",
+      tasks: [],
+      kasTransactions: [],
+      materials: [],
+      hourlySpam: { enabled: true, lastSpamTimestamp: 0 },
+      dailyRoutine: { enabled: true, time: "06:00", lastNotifiedDate: "" },
+      currentViewingDoc: null
+    };
+
+    let selectedUploadFile = null;
+
+    /* Load Data from Storage */
+    function loadStorageData() {
+      // 1. Tasks
+      try {
+        const rawTasks = localStorage.getItem(STORAGE_KEY_TASKS);
+        if (rawTasks) state.tasks = JSON.parse(rawTasks);
+        else {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          tomorrow.setHours(7, 30, 0, 0);
+          state.tasks = [{
+            id: "task-1",
+            title: "Latihan Soal Matematika Bab 3",
+            subject: "Matematika",
+            deadline: tomorrow.toISOString().slice(0, 16),
+            notes: "Kerjakan nomor 1-10 di buku tugas berpetak.",
+            completed: false, notifiedNightBefore: false, notifiedUrgent: false,
+            createdAt: new Date().toISOString()
+          }];
+          saveTasks();
+        }
+      } catch (e) { state.tasks = []; }
+
+      // 2. Keuangan Pribadi Siswa
+      try {
+        const rawKas = localStorage.getItem(STORAGE_KEY_KAS);
+        if (rawKas) {
+          state.kasTransactions = JSON.parse(rawKas);
+        } else {
+          const todayStr = new Date().toISOString().slice(0, 10);
+          state.kasTransactions = [
+            { id: "kas-1", type: "income", amount: 100000, desc: "Uang Saku Mingguan dari Ortu", category: "Uang Saku / Jajan (Ortu)", date: todayStr },
+            { id: "kas-2", type: "expense", amount: 15000, desc: "Makan Siang di Kantin & Es Teh", category: "Makan & Minum / Kantin", date: todayStr },
+            { id: "kas-3", type: "expense", amount: 10000, desc: "Bensin Motor & Parkir", category: "Transportasi / Bensin", date: todayStr },
+            { id: "kas-4", type: "expense", amount: 5000, desc: "Bayar Kas Kelas Minggu Ini", category: "Bayar Kas Kelas & Sekolah", date: todayStr }
+          ];
+          saveKas();
+        }
+      } catch (e) { state.kasTransactions = []; }
+
+      // 3. Materials & Rangkuman PPT
+      try {
+        const rawMat = localStorage.getItem(STORAGE_KEY_MATERIALS_META);
+        if (rawMat) state.materials = JSON.parse(rawMat);
+        else {
+          const todayStr = new Date().toISOString().slice(0, 10);
+          state.materials = [
+            {
+              id: "mat-1",
+              title: "Rangkuman Bab 1: Sel & Jaringan Tumbuhan",
+              subject: "Biologi",
+              type: "text",
+              content: "POIN PENTING MATERI BIOLOGI X-5:\n1. Sel eukariotik memiliki membran inti.\n2. Organel sel: Mitokondria (respirasi), Ribosom (sintesis protein), Kloroplas (fotosintesis).\n3. Jaringan meristem: jaringan embrional yang aktif membelah.",
+              notes: "Catatan dari Drs. Ali Akhmat Makhali, M.Pd",
+              date: todayStr
+            },
+            {
+              id: "mat-2",
+              title: "Modul PPT Matematika: Fungsi Kuadrat & Grafik",
+              subject: "Matematika",
+              type: "pdf",
+              fileName: "Materi_Fungsi_Kuadrat_KelasX.pdf",
+              fileSize: "1.2 MB",
+              hasBlob: true,
+              notes: "Slide penjelasan bu Laora Dessy Andhini, S.Pd",
+              date: todayStr
+            }
+          ];
+          saveMaterials();
+          // Store default PDF into IDB so it opens smoothly on first click
+          const defaultPdfBlob = base64ToBlob(SAMPLE_MINIMAL_PDF_BASE64, "application/pdf");
+          storeFileInIDB("mat-2", defaultPdfBlob).catch(() => {});
+        }
+      } catch (e) { state.materials = []; }
+
+      // 4. Hourly Spam Settings
+      try {
+        const rawSpam = localStorage.getItem(STORAGE_KEY_HOURLY_SPAM);
+        if (rawSpam) state.hourlySpam = JSON.parse(rawSpam);
+      } catch (e) {}
+
+      // 5. Daily Routine Settings
+      try {
+        const rawDaily = localStorage.getItem(STORAGE_KEY_DAILY_ROUTINE);
+        if (rawDaily) state.dailyRoutine = JSON.parse(rawDaily);
+      } catch (e) {}
+
+      // Sync UI switches
+      const spamToggle = document.getElementById("toggleHourlySpam");
+      if (spamToggle) spamToggle.checked = !!state.hourlySpam.enabled;
+
+      const routineToggle = document.getElementById("toggleDailyRoutine");
+      if (routineToggle) routineToggle.checked = !!state.dailyRoutine.enabled;
+
+      const routineSelect = document.getElementById("selectDailyRoutineTime");
+      if (routineSelect && state.dailyRoutine.time) routineSelect.value = state.dailyRoutine.time;
+    }
+
+    function saveTasks() { localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(state.tasks)); renderTasks(); updateTaskStats(); }
+    function saveKas() { localStorage.setItem(STORAGE_KEY_KAS, JSON.stringify(state.kasTransactions)); renderKas(); updateKasSummary(); }
+    function saveMaterials() { localStorage.setItem(STORAGE_KEY_MATERIALS_META, JSON.stringify(state.materials)); renderMaterials(); }
+
+    function switchTab(tabId, el) {
+      state.activeTab = tabId;
+      document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add("active");
+      if (el) el.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function selectDay(dayKey) {
+      state.selectedDay = dayKey;
+      document.querySelectorAll(".day-pill").forEach(pill => {
+        pill.classList.toggle("active", pill.getAttribute("data-day") === dayKey);
+      });
+      renderSchedule();
+    }
+
+    function formatDayName(key) {
+      const map = { SENIN: "Senin", SELASA: "Selasa", RABU: "Rabu", KAMIS: "Kamis", JUMAT: "Jum'at" };
+      return map[key] || key;
+    }
+
+    /* Bug Fix: Weekend & Day Detection */
+    function detectCurrentDay() {
+      const now = new Date();
+      const dayIndex = now.getDay(); // 0 = Minggu, 1 = Senin, 2 = Selasa, 3 = Rabu, 4 = Kamis, 5 = Jumat, 6 = Sabtu
+      const isWeekend = (dayIndex === 0 || dayIndex === 6);
+      
+      const dayMap = { 1: "SENIN", 2: "SELASA", 3: "RABU", 4: "KAMIS", 5: "JUMAT" };
+      const detected = dayMap[dayIndex] || "SENIN"; // default view to Senin on weekend
+      
+      state.selectedDay = detected;
+      state.isWeekend = isWeekend;
+      state.todayKey = dayMap[dayIndex] || null; // null on Saturday and Sunday
+
+      const dayNamesId = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu"];
+      const monthsId = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      
+      const elem = document.getElementById("currentDayText");
+      if (elem) {
+        if (isWeekend) {
+          elem.innerHTML = `<strong>${dayNamesId[dayIndex]}</strong> (Libur Akhir Pekan) • ${now.getDate()} ${monthsId[now.getMonth()]}`;
+        } else {
+          elem.textContent = `${dayNamesId[dayIndex]}, ${now.getDate()} ${monthsId[now.getMonth()]} ${now.getFullYear()}`;
+        }
+      }
+
+      const statusBadge = document.getElementById("headerStatusBadge");
+      if (statusBadge) {
+        if (isWeekend) {
+          statusBadge.textContent = "HARI LIBUR";
+          statusBadge.className = "header-status-badge weekend";
+        } else {
+          statusBadge.textContent = "JAM PELAJARAN";
+          statusBadge.className = "header-status-badge school";
+        }
+      }
+
+      document.querySelectorAll(".day-pill").forEach(pill => {
+        pill.classList.remove("is-today");
+        if (!isWeekend && pill.getAttribute("data-day") === state.todayKey) {
+          pill.classList.add("is-today");
+        }
+      });
+      selectDay(detected);
+    }
+
+    function startClock() {
+      function tick() {
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const clockElem = document.getElementById("liveClock");
+        if (clockElem) clockElem.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      }
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    function renderSchedule() {
+      const container = document.getElementById("scheduleListContainer");
+      const titleLabel = document.getElementById("scheduleTitleLabel");
+      const countBadge = document.getElementById("scheduleCountBadge");
+      const weekendBox = document.getElementById("weekendBannerBox");
+      const items = SCHEDULE_DATA[state.selectedDay] || [];
+
+      if (titleLabel) titleLabel.innerHTML = `Jadwal ${formatDayName(state.selectedDay)}`;
+      if (countBadge) countBadge.textContent = `${items.length} Mapel`;
+
+      const now = new Date();
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      const dayIndex = now.getDay();
+      const dayKeyMap = { 1: "SENIN", 2: "SELASA", 3: "RABU", 4: "KAMIS", 5: "JUMAT" };
+      const realTodayKey = dayKeyMap[dayIndex] || null; // null on Saturday (6) and Sunday (0)
+      
+      // CRITICAL FIX: isToday is strictly false on Saturday and Sunday!
+      const isToday = (realTodayKey !== null && realTodayKey === state.selectedDay);
+
+      // Show or hide the weekend explanation banner
+      if (weekendBox) {
+        if (dayIndex === 0 || dayIndex === 6) {
+          weekendBox.style.display = "flex";
+          weekendBox.innerHTML = `
+            <div class="weekend-icon">🎉</div>
+            <div class="weekend-text">
+              <h4>Hari Ini Libur Akhir Pekan (${dayIndex === 6 ? 'Sabtu' : 'Minggu'})</h4>
+              <p>Tidak ada kegiatan belajar mengajar hari ini. Menampilkan jadwal <strong>SENIN</strong> agar kamu bisa mempersiapkan buku dan tugas lebih awal.</p>
+            </div>
+          `;
+        } else {
+          weekendBox.style.display = "none";
+        }
+      }
+
+      container.innerHTML = items.map(item => {
+        const isOngoing = isToday && (currentMin >= item.startMin && currentMin < item.endMin);
+        const isPassed = isToday && (currentMin >= item.endMin);
+
+        let statusBadge = "";
+        if (isOngoing) statusBadge = `<span class="status-tag active"><span class="pulse-dot"></span> Sedang Berlangsung</span>`;
+        else if (isPassed) statusBadge = `<span class="status-tag" style="background:#22222a; color:#a1a1aa;">Selesai</span>`;
+
+        return `
+          <div class="schedule-item ${isOngoing ? 'ongoing' : ''}">
+            <div class="schedule-top">
+              <span class="time-badge">${item.time} WIB</span>
+              ${statusBadge}
+            </div>
+            <div class="subject-title">${item.subject}</div>
+            <div class="teacher-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span><strong>Pengajar:</strong> ${item.teacher}</span>
+            </div>
+            <div class="teacher-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>${item.room}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* Notification Management (Web API + Native AndroidBridge) */
+    function checkNotificationStatus() {
+      const badge = document.getElementById("permBadge");
+      const btn = document.getElementById("btnRequestNotif");
+      if (!("Notification" in window)) {
+        if (badge) { badge.textContent = "Tidak Didukung"; badge.className = "perm-badge denied"; }
+        if (btn) { btn.disabled = true; btn.textContent = "Browser Tidak Mendukung"; }
+        return;
+      }
+      if (Notification.permission === "granted") {
+        if (badge) { badge.textContent = "Izin Aktif"; badge.className = "perm-badge granted"; }
+        if (btn) { btn.textContent = "Notifikasi Siap (Aktif)"; btn.className = "btn btn-secondary btn-sm btn-block"; }
+      } else if (Notification.permission === "denied") {
+        if (badge) { badge.textContent = "Izin Ditolak"; badge.className = "perm-badge denied"; }
+      } else {
+        if (badge) { badge.textContent = "Belum Diaktifkan"; badge.className = "perm-badge default"; }
+      }
+    }
+
+    async function requestNotificationPermission() {
+      if (window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
+        window.AndroidBridge.requestNotificationPermission();
+      }
+      if (!("Notification" in window)) {
+        showToast("Browser tidak mendukung Notification API.", "error");
+        return;
+      }
+      try {
+        const perm = await Notification.requestPermission();
+        checkNotificationStatus();
+        if (perm === "granted") {
+          showToast("Notifikasi aktif! Pengingat otomatis siap dikirim.");
+          sendSystemNotification("CLASS X.5 SMAN 3 Jombang", "Notifikasi pengingat & alarm tugas telah diaktifkan!");
+        }
+      } catch (err) {
+        showToast("Gagal meminta izin: " + err.message, "error");
+      }
+    }
+
+    function sendSystemNotification(title, body) {
+      if (window.AndroidBridge && window.AndroidBridge.showNotification) {
+        try { window.AndroidBridge.showNotification(title, body); return; } catch (e) {}
+      }
+      if ("Notification" in window && Notification.permission === "granted") {
+        try { new Notification(title, { body: body, icon: "logo.png", vibrate: [250, 150, 250] }); } catch (e) {}
+      }
+    }
+
+    function triggerUrgentNotificationTest() {
+      sendSystemNotification("⚡ Tes Notifikasi & Alarm CLASS X.5", "Uji coba berhasil: Notifikasi prioritas tinggi siap mengingatkan tugas harianmu!");
+      showToast("Notifikasi uji coba dikirim!");
+    }
+
+    function openDndChannelSettings() {
+      if (window.AndroidBridge && window.AndroidBridge.openDndSettings) {
+        window.AndroidBridge.openDndSettings();
+      } else {
+        showToast("Di HP Android: Buka Pengaturan > Aplikasi > CLASS X.5 > Notifikasi > Aktifkan 'Abaikan Jangan Ganggu'.");
+      }
+    }
+
+    /* Hourly Spam Nagging Feature */
+    function toggleHourlySpam(isChecked) {
+      state.hourlySpam.enabled = isChecked;
+      localStorage.setItem(STORAGE_KEY_HOURLY_SPAM, JSON.stringify(state.hourlySpam));
+      showToast(isChecked ? "Mode Spam Tiap 1 Jam Aktif!" : "Mode Spam dinonaktifkan.");
+    }
+
+    function triggerHourlyNagTest() {
+      const incomplete = state.tasks.filter(t => !t.completed);
+      if (incomplete.length === 0) {
+        sendSystemNotification("🚨 TES SPAM TUGAS CLASS X.5", "Hebat! Semua tugasmu sudah selesai. Mode spam hanya berbunyi jika ada tugas yang tertunda.");
+      } else {
+        const top = incomplete[0];
+        sendSystemNotification(
+          `🚨 SPAM PENGINGAT TUGAS! (${incomplete.length} Belum Selesai)`,
+          `⚠️ Jangan lupa: "${top.title}" (${top.subject}) belum selesai! Segera buka buku & selesaikan sekarang!`
+        );
+      }
+      showToast("Notifikasi spam 1 jam diuji coba!");
+    }
+
+    function checkHourlySpamReminders() {
+      if (!state.hourlySpam || !state.hourlySpam.enabled) return;
+      const incomplete = state.tasks.filter(t => !t.completed);
+      if (incomplete.length === 0) return; // All tasks finished!
+
+      const nowMs = Date.now();
+      const oneHourMs = 60 * 60 * 1000;
+      const elapsed = nowMs - (state.hourlySpam.lastSpamTimestamp || 0);
+
+      if (elapsed >= oneHourMs) {
+        incomplete.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        const topTask = incomplete[0];
+        sendSystemNotification(
+          `🚨 SPAM PENGINGAT TUGAS! (${incomplete.length} Belum Selesai)`,
+          `⚠️ Tugas "${topTask.title}" (${topTask.subject}) belum selesai dikerjakan! Segera selesaikan tugasmu!`
+        );
+        state.hourlySpam.lastSpamTimestamp = nowMs;
+        localStorage.setItem(STORAGE_KEY_HOURLY_SPAM, JSON.stringify(state.hourlySpam));
+      }
+    }
+
+    /* Daily Routine Reminders */
+    function toggleDailyRoutine(isChecked) {
+      state.dailyRoutine.enabled = isChecked;
+      localStorage.setItem(STORAGE_KEY_DAILY_ROUTINE, JSON.stringify(state.dailyRoutine));
+      showToast(isChecked ? "Pengingat Rutin Harian Aktif!" : "Pengingat Rutin dinonaktifkan.");
+    }
+
+    function updateDailyRoutineTime(val) {
+      state.dailyRoutine.time = val;
+      localStorage.setItem(STORAGE_KEY_DAILY_ROUTINE, JSON.stringify(state.dailyRoutine));
+      showToast(`Waktu pengingat harian disetel ke pukul ${val} WIB`);
+    }
+
+    function checkDailyRoutineReminder() {
+      if (!state.dailyRoutine || !state.dailyRoutine.enabled) return;
+      const now = new Date();
+      const todayDateStr = now.toISOString().slice(0, 10);
+      if (state.dailyRoutine.lastNotifiedDate === todayDateStr) return; // already sent today
+
+      const [targetHour, targetMin] = (state.dailyRoutine.time || "06:00").split(":").map(Number);
+      if (now.getHours() === targetHour && now.getMinutes() >= targetMin) {
+        const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu"];
+        const todayName = dayNames[now.getDay()];
+        const isWeekend = (now.getDay() === 0 || now.getDay() === 6);
+        
+        let message = "";
+        if (isWeekend) {
+          message = `Selamat ${now.getHours() < 12 ? 'pagi' : 'malam'}! Hari ini ${todayName} (Libur). Santai sejenak dan cek tugas yang belum kamu selesaikan.`;
+        } else {
+          const dayKeyMap = { 1: "SENIN", 2: "SELASA", 3: "RABU", 4: "KAMIS", 5: "JUMAT" };
+          const dayKey = dayKeyMap[now.getDay()];
+          const subjects = (SCHEDULE_DATA[dayKey] || []).map(s => s.subject).slice(0, 3).join(", ");
+          message = `Selamat ${now.getHours() < 12 ? 'pagi' : 'malam'} siswa X-5! Jadwal pelajaran hari ini: ${subjects}... Siapkan buku & perlengkapan belajarmu!`;
+        }
+        
+        sendSystemNotification("⏰ Pengingat Rutin Harian X-5", message);
+        state.dailyRoutine.lastNotifiedDate = todayDateStr;
+        localStorage.setItem(STORAGE_KEY_DAILY_ROUTINE, JSON.stringify(state.dailyRoutine));
+      }
+    }
+
+    /* Standard Task Reminders (19.00 night before and 2 hours before) */
+    function checkAndTriggerTaskReminders() {
+      const now = new Date();
+      let hasChanges = false;
+      state.tasks.forEach(task => {
+        if (task.completed) return;
+        const deadlineDate = new Date(task.deadline);
+        if (isNaN(deadlineDate.getTime())) return;
+        const nightBefore = new Date(deadlineDate);
+        nightBefore.setDate(nightBefore.getDate() - 1);
+        nightBefore.setHours(19, 0, 0, 0);
+
+        if (now >= nightBefore && now < deadlineDate && !task.notifiedNightBefore) {
+          const hh = String(deadlineDate.getHours()).padStart(2, '0');
+          const mm = String(deadlineDate.getMinutes()).padStart(2, '0');
+          sendSystemNotification("🔔 Pengingat Tugas X-5: Besok Deadline!", `Tugas "${task.title}" (${task.subject}) harus selesai besok pukul ${hh}:${mm} WIB.`);
+          task.notifiedNightBefore = true;
+          hasChanges = true;
+        }
+
+        const twoHoursBefore = new Date(deadlineDate.getTime() - 2 * 60 * 60 * 1000);
+        if (now >= twoHoursBefore && now < deadlineDate && !task.notifiedUrgent) {
+          sendSystemNotification("⚠️ Tugas Mendesak CLASS X.5!", `Tugas "${task.title}" (${task.subject}) tenggat waktunya kurang dari 2 jam lagi!`);
+          task.notifiedUrgent = true;
+          hasChanges = true;
+        }
+      });
+      if (hasChanges) saveTasks();
+    }
+
+    /* Tasks UI & Management */
+    function setTaskFilter(filter, el) {
+      state.taskFilter = filter;
+      document.querySelectorAll("#tabTasks .filter-chip").forEach(c => c.classList.remove("active"));
+      if (el) el.classList.add("active");
+      renderTasks();
+    }
+
+    function updateTaskStats() {
+      const total = state.tasks.length;
+      const done = state.tasks.filter(t => t.completed).length;
+      document.getElementById("statTotalTasks").textContent = total;
+      document.getElementById("statPendingTasks").textContent = total - done;
+      document.getElementById("statDoneTasks").textContent = done;
+    }
+
+    function renderTasks() {
+      const container = document.getElementById("taskListContainer");
+      if (!container) return;
+      let filtered = state.tasks;
+      if (state.taskFilter === "pending") filtered = state.tasks.filter(t => !t.completed);
+      else if (state.taskFilter === "done") filtered = state.tasks.filter(t => t.completed);
+      filtered.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>Tidak ada tugas di kategori ini.</p></div>`;
+        return;
+      }
+
+      const now = new Date();
+      container.innerHTML = filtered.map(task => {
+        const deadlineDate = new Date(task.deadline);
+        const diffMs = deadlineDate - now;
+        const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        
+        let countdown = task.completed ? "Selesai" : diffMs < 0 ? "Terlewat" : diffHours <= 2 ? "< 2 jam lagi" : diffHours < 24 ? `${diffHours} jam lagi` : `${diffDays} hari lagi`;
+        const isOverdue = !task.completed && diffMs < 0;
+        const isUrgent = !task.completed && diffMs > 0 && diffHours <= 6;
+        const dStr = isNaN(deadlineDate.getTime()) ? task.deadline : deadlineDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+        return `
+          <div class="task-card ${task.completed ? 'completed' : isOverdue ? 'overdue' : isUrgent ? 'urgent-today' : ''}">
+            <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTaskCompletion('${task.id}')">
+              <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-meta-top">
+                <span class="task-subject">${escapeHtml(task.subject)}</span>
+                <span class="task-countdown ${isOverdue ? 'overdue' : isUrgent ? 'urgent' : ''}">${countdown}</span>
+              </div>
+              <div class="task-text-title">${escapeHtml(task.title)}</div>
+              ${task.notes ? `<div class="task-notes">${escapeHtml(task.notes)}</div>` : ''}
+              <div class="task-footer">
+                <span>Deadline: ${dStr} WIB</span>
+                <button class="delete-btn" title="Hapus Tugas" onclick="deleteTask('${task.id}')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleTaskCompletion(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        saveTasks();
+        if (task.completed) {
+          showToast(`Tugas "${task.title}" selesai dikerjakan!`);
+        }
+      }
+    }
+
+    function openAddTaskModal() {
+      const now = new Date();
+      now.setHours(now.getHours() + 24);
+      now.setMinutes(0);
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskSubject").selectedIndex = 0;
+      document.getElementById("taskDeadline").value = now.toISOString().slice(0, 16);
+      document.getElementById("taskNotes").value = "";
+      openModal("modalAddTask");
+    }
+
+    function handleAddTask(e) {
+      e.preventDefault();
+      const title = document.getElementById("taskTitle").value.trim();
+      const subject = document.getElementById("taskSubject").value;
+      const deadline = document.getElementById("taskDeadline").value;
+      const notes = document.getElementById("taskNotes").value.trim();
+
+      if (!title || !subject || !deadline) {
+        showToast("Mohon lengkapi judul, mapel, dan deadline.", "error");
+        return;
+      }
+
+      state.tasks.push({
+        id: "task-" + Date.now(),
+        title, subject, deadline, notes,
+        completed: false,
+        notifiedNightBefore: false,
+        notifiedUrgent: false,
+        createdAt: new Date().toISOString()
+      });
+
+      saveTasks();
+      closeModal("modalAddTask");
+      showToast("Tugas baru berhasil disimpan! Pengingat otomatis diatur.");
+    }
+
+    function deleteTask(id) {
+      if (confirm("Hapus tugas ini?")) {
+        state.tasks = state.tasks.filter(t => t.id !== id);
+        saveTasks();
+        showToast("Tugas telah dihapus.");
+      }
+    }
+
+    /* Materi & Rangkuman PPT & Opening PDF/Documents */
+    function detectFileType(fileName) {
+      if (!fileName) return 'text';
+      const ext = fileName.split('.').pop().toLowerCase();
+      if (ext === 'ppt' || ext === 'pptx') return 'ppt';
+      if (ext === 'pdf') return 'pdf';
+      if (ext === 'doc' || ext === 'docx') return 'doc';
+      if (['png', 'jpg', 'jpeg', 'webp'].includes(ext)) return 'img';
+      return 'text';
+    }
+
+    function setMaterialSubjectFilter(subject, el) {
+      state.materialSubjectFilter = subject;
+      document.querySelectorAll("#materialFilterBar .filter-chip").forEach(c => c.classList.remove("active"));
+      if (el) el.classList.add("active");
+      renderMaterials();
+    }
+
+    function handleMaterialSearch(query) {
+      state.materialSearchQuery = (query || "").trim().toLowerCase();
+      renderMaterials();
+    }
+
+    function renderMaterials() {
+      const container = document.getElementById("materialListContainer");
+      const countBadge = document.getElementById("materialCountBadge");
+      if (!container) return;
+
+      let filtered = state.materials;
+      if (state.materialSubjectFilter !== "ALL") filtered = filtered.filter(m => m.subject === state.materialSubjectFilter);
+      if (state.materialSearchQuery) {
+        filtered = filtered.filter(m =>
+          m.title.toLowerCase().includes(state.materialSearchQuery) ||
+          m.subject.toLowerCase().includes(state.materialSearchQuery) ||
+          (m.notes && m.notes.toLowerCase().includes(state.materialSearchQuery)) ||
+          (m.fileName && m.fileName.toLowerCase().includes(state.materialSearchQuery))
+        );
+      }
+      filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      if (countBadge) countBadge.textContent = `${filtered.length} Dokumen`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>Belum ada PPT atau materi di kategori ini.</p><button class="btn btn-primary btn-sm" onclick="openAddMaterialModal('file')" style="margin-top:8px;">Upload File Pertama</button></div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const typeClass = item.type || detectFileType(item.fileName);
+        const typeLabel = typeClass.toUpperCase();
+        const fileSubtext = item.fileName ? `${item.fileName} • ${item.fileSize || ''}` : `Rangkuman Teks • ${item.content ? item.content.length + ' karakter' : ''}`;
+
+        return `
+          <div class="material-card">
+            <div class="material-header">
+              <div class="file-type-icon ${typeClass}">${typeLabel}</div>
+              <div class="material-info">
+                <div class="material-top-meta">
+                  <span class="material-subject">${escapeHtml(item.subject)}</span>
+                  <span class="material-date">${item.date || ''}</span>
+                </div>
+                <div class="material-title">${escapeHtml(item.title)}</div>
+                <div class="material-filename">${escapeHtml(fileSubtext)}</div>
+              </div>
+            </div>
+            ${item.notes ? `<div class="material-desc">${escapeHtml(item.notes)}</div>` : ''}
+            <div class="material-actions">
+              ${item.type === 'text' ? `
+                <button class="btn btn-secondary btn-sm" onclick="viewSummaryText('${item.id}')">Baca Rangkuman</button>
+              ` : `
+                <button class="btn btn-primary btn-sm" onclick="openOrDownloadMaterial('${item.id}')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                  Buka Dokumen / PDF
+                </button>
+              `}
+              <button class="delete-btn" title="Hapus Materi" onclick="deleteMaterial('${item.id}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openAddMaterialModal(mode = 'file') {
+      clearSelectedFile();
+      document.getElementById("materialTitle").value = "";
+      document.getElementById("materialSubject").selectedIndex = 0;
+      document.getElementById("materialNotes").value = "";
+      document.getElementById("materialTextContent").value = "";
+      setMaterialMode(mode);
+      openModal("modalAddMaterial");
+    }
+
+    function setMaterialMode(mode) {
+      state.materialMode = mode;
+      document.getElementById("btnModeFile").classList.toggle("active", mode === 'file');
+      document.getElementById("btnModeText").classList.toggle("active", mode === 'text');
+      document.getElementById("sectionFileUpload").style.display = mode === 'file' ? 'flex' : 'none';
+      document.getElementById("sectionTextNotes").style.display = mode === 'text' ? 'flex' : 'none';
+    }
+
+    function handleFileSelected(input) {
+      if (input.files && input.files[0]) {
+        selectedUploadFile = input.files[0];
+        document.getElementById("selectedFileName").textContent = `${selectedUploadFile.name} (${formatBytes(selectedUploadFile.size)})`;
+        document.getElementById("selectedFileBadge").style.display = "flex";
+        if (!document.getElementById("materialTitle").value) {
+          const rawName = selectedUploadFile.name.replace(/\.[^/.]+$/, "");
+          document.getElementById("materialTitle").value = rawName.replace(/_/g, ' ');
+        }
+      }
+    }
+
+    function clearSelectedFile(e) {
+      if (e) e.stopPropagation();
+      selectedUploadFile = null;
+      document.getElementById("materialFileInput").value = "";
+      document.getElementById("selectedFileBadge").style.display = "none";
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    async function handleAddMaterial(e) {
+      e.preventDefault();
+      const title = document.getElementById("materialTitle").value.trim();
+      const subject = document.getElementById("materialSubject").value;
+      const notes = document.getElementById("materialNotes").value.trim();
+      const dateStr = new Date().toISOString().slice(0, 10);
+
+      if (!title || !subject) {
+        showToast("Judul dan mata pelajaran harus diisi.", "error");
+        return;
+      }
+
+      if (state.materialMode === "file") {
+        if (!selectedUploadFile) {
+          showToast("Silakan pilih file PPT / PDF dokumen terlebih dahulu.", "error");
+          return;
+        }
+        const id = "mat-" + Date.now();
+        const detectedType = detectFileType(selectedUploadFile.name);
+        await storeFileInIDB(id, selectedUploadFile);
+
+        state.materials.unshift({
+          id, title, subject, type: detectedType,
+          fileName: selectedUploadFile.name, fileSize: formatBytes(selectedUploadFile.size),
+          hasBlob: true, notes, date: dateStr
+        });
+        saveMaterials();
+        closeModal("modalAddMaterial");
+        showToast(`File "${selectedUploadFile.name}" berhasil disimpan!`);
+      } else {
+        const content = document.getElementById("materialTextContent").value.trim();
+        if (!content) {
+          showToast("Tuliskan isi rangkuman pelajaran terlebih dahulu.", "error");
+          return;
+        }
+        state.materials.unshift({ id: "mat-" + Date.now(), title, subject, type: "text", content, notes, date: dateStr });
+        saveMaterials();
+        closeModal("modalAddMaterial");
+        showToast("Rangkuman materi berhasil disimpan!");
+      }
+    }
+
+    /* Robust Opening of PDF and PPT files */
+    async function openOrDownloadMaterial(id) {
+      const item = state.materials.find(m => m.id === id);
+      if (!item) return;
+
+      let fileData = await getFileFromIDB(id);
+      
+      // If sample file without stored blob, provide fallback blob so it opens seamlessly
+      if (!fileData) {
+        if (item.fileName && item.fileName.toLowerCase().endsWith(".pdf")) {
+          fileData = base64ToBlob(SAMPLE_MINIMAL_PDF_BASE64, "application/pdf");
+        } else {
+          const sampleText = `CLASS X.5 SMA NEGERI 3 JOMBANG\n\nDokumen: ${item.title}\nMata Pelajaran: ${item.subject}\nCatatan: ${item.notes || '-'}\n\nSilakan unggah file presentasi PPT / PDF asli dari bapak/ibu guru untuk menggantikan template ini.`;
+          fileData = new Blob([sampleText], { type: "text/plain" });
+        }
+        await storeFileInIDB(id, fileData);
+      }
+
+      const mimeType = getMimeType(item.fileName);
+      const blob = fileData instanceof Blob ? fileData : new Blob([fileData], { type: mimeType });
+      
+      state.currentViewingDoc = { item, blob, mimeType };
+
+      // Set modal UI
+      document.getElementById("docModalTitle").textContent = item.title;
+      document.getElementById("docModalSubject").textContent = item.subject;
+      document.getElementById("docModalSize").textContent = item.fileSize || formatBytes(blob.size);
+
+      const viewerContainer = document.getElementById("docViewerContainer");
+      const isPdf = mimeType === 'application/pdf' || (item.fileName && item.fileName.toLowerCase().endsWith(".pdf"));
+
+      if (isPdf) {
+        const blobUrl = URL.createObjectURL(blob);
+        viewerContainer.innerHTML = `
+          <div class="doc-viewer-frame">
+            <iframe src="${blobUrl}#toolbar=0" title="PDF Viewer"></iframe>
+          </div>
+        `;
+      } else {
+        viewerContainer.innerHTML = `
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div class="file-type-icon ${item.type || 'ppt'}" style="width: 50px; height: 50px; font-size: 14px;">${(item.type || 'PPT').toUpperCase()}</div>
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--accent-white);">${escapeHtml(item.fileName || item.title)}</h4>
+            <p style="font-size: 12px; color: var(--text-secondary);">File presentasi/dokumen siap dibuka menggunakan aplikasi reader favoritmu (Microsoft PowerPoint, Google Slides, WPS Office, atau Drive).</p>
+          </div>
+        `;
+      }
+
+      // Configure Actions
+      document.getElementById("btnLaunchExternalDoc").onclick = async () => {
+        showToast("Membuka dengan aplikasi pembaca dokumen...");
+        const base64 = await blobToBase64(blob);
+        if (window.AndroidBridge && window.AndroidBridge.openFile) {
+          window.AndroidBridge.openFile(base64, mimeType, item.fileName || "dokumen_x5.pdf");
+        } else {
+          // Web fallback
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.target = "_blank";
+          a.download = item.fileName || "dokumen_x5.pdf";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
+      };
+
+      document.getElementById("btnDownloadDoc").onclick = () => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = item.fileName || "dokumen_x5.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast(`Mengunduh ${item.fileName}...`);
+      };
+
+      openModal("modalViewDocument");
+    }
+
+    function viewSummaryText(id) {
+      const item = state.materials.find(m => m.id === id);
+      if (!item) return;
+      document.getElementById("viewSummaryTitle").textContent = item.title;
+      document.getElementById("viewSummarySubject").textContent = item.subject;
+      document.getElementById("viewSummaryDate").textContent = item.date || "";
+      document.getElementById("viewSummaryBody").textContent = item.content || "Tidak ada isi catatan.";
+      openModal("modalViewSummary");
+    }
+
+    async function deleteMaterial(id) {
+      if (confirm("Hapus materi ini?")) {
+        state.materials = state.materials.filter(m => m.id !== id);
+        await deleteFileFromIDB(id);
+        saveMaterials();
+        showToast("Materi telah dihapus.");
+      }
+    }
+
+    /* Keuangan Pribadi Siswa */
+    function formatRupiah(num) {
+      return "Rp " + Number(num || 0).toLocaleString("id-ID");
+    }
+
+    function setKasFilter(filter, el) {
+      state.kasFilter = filter;
+      document.querySelectorAll("#tabKas .filter-chip").forEach(c => c.classList.remove("active"));
+      if (el) el.classList.add("active");
+      renderKas();
+    }
+
+    function updateKasSummary() {
+      let income = 0;
+      let expense = 0;
+      state.kasTransactions.forEach(t => {
+        if (t.type === "income") income += Number(t.amount);
+        else expense += Number(t.amount);
+      });
+      const balance = income - expense;
+      document.getElementById("kasBalanceText").textContent = formatRupiah(balance);
+      document.getElementById("kasTotalIncomeText").textContent = formatRupiah(income);
+      document.getElementById("kasTotalExpenseText").textContent = formatRupiah(expense);
+      document.getElementById("kasCountBadge").textContent = `${state.kasTransactions.length} Catatan`;
+    }
+
+    function renderKas() {
+      const container = document.getElementById("kasListContainer");
+      if (!container) return;
+      let filtered = state.kasTransactions;
+      if (state.kasFilter === "income") filtered = filtered.filter(t => t.type === "income");
+      else if (state.kasFilter === "expense") filtered = filtered.filter(t => t.type === "expense");
+      filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>Belum ada catatan keuangan pribadi.</p><button class="btn btn-primary btn-sm" onclick="openAddKasModal()" style="margin-top:8px;">Catat Sekarang</button></div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(t => {
+        const isIncome = t.type === "income";
+        const prefix = isIncome ? "+" : "-";
+        return `
+          <div class="kas-item">
+            <div class="kas-item-left">
+              <span class="kas-desc">${escapeHtml(t.desc)}</span>
+              <span class="kas-meta">${escapeHtml(t.category || 'Keuangan Pribadi')} • ${t.date || ''}</span>
+            </div>
+            <div class="kas-item-right">
+              <span class="kas-amount ${isIncome ? 'income' : 'expense'}">${prefix}${formatRupiah(t.amount)}</span>
+              <button class="delete-btn" title="Hapus Catatan" onclick="deleteKas('${t.id}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setKasType(type) {
+      state.currentKasType = type;
+      document.getElementById("btnTypeIncome").classList.toggle("active", type === "income");
+      document.getElementById("btnTypeExpense").classList.toggle("active", type === "expense");
+    }
+
+    function openAddKasModal() {
+      document.getElementById("kasAmount").value = "";
+      document.getElementById("kasDesc").value = "";
+      document.getElementById("kasDate").value = new Date().toISOString().slice(0, 10);
+      setKasType("income");
+      openModal("modalAddKas");
+    }
+
+    function handleAddKas(e) {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById("kasAmount").value);
+      const desc = document.getElementById("kasDesc").value.trim();
+      const category = document.getElementById("kasCategory").value;
+      const date = document.getElementById("kasDate").value || new Date().toISOString().slice(0, 10);
+
+      if (!amount || amount <= 0 || !desc) {
+        showToast("Nominal dan keterangan harus diisi dengan benar.", "error");
+        return;
+      }
+
+      state.kasTransactions.unshift({
+        id: "kas-" + Date.now(),
+        type: state.currentKasType,
+        amount, desc, category, date
+      });
+
+      saveKas();
+      closeModal("modalAddKas");
+      showToast("Catatan keuangan pribadi berhasil disimpan!");
+    }
+
+    function deleteKas(id) {
+      if (confirm("Hapus catatan transaksi ini?")) {
+        state.kasTransactions = state.kasTransactions.filter(t => t.id !== id);
+        saveKas();
+        showToast("Catatan keuangan telah dihapus.");
+      }
+    }
+
+    function openSpreadsheetModal() { openModal("modalSpreadsheet"); }
+
+    function downloadKasSpreadsheet() {
+      if (state.kasTransactions.length === 0) {
+        showToast("Belum ada data catatan keuangan untuk diekspor.", "error");
+        return;
+      }
+      let runningBalance = 0;
+      const sortedAsc = [...state.kasTransactions].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+      let csv = "No,Tanggal,Keterangan,Kategori,Jenis,Uang Masuk (Rp),Uang Keluar (Rp),Saldo Berjalan (Rp)\r\n";
+
+      sortedAsc.forEach((t, index) => {
+        const isInc = t.type === "income";
+        const inc = isInc ? t.amount : 0;
+        const exp = isInc ? 0 : t.amount;
+        runningBalance += (inc - exp);
+        const descEsc = `"${(t.desc || '').replace(/"/g, '""')}"`;
+        const catEsc = `"${(t.category || '').replace(/"/g, '""')}"`;
+        const jenisStr = isInc ? "Uang Masuk" : "Uang Keluar";
+        csv += `${index + 1},${t.date || ''},${descEsc},${catEsc},${jenisStr},${inc},${exp},${runningBalance}\r\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Keuangan_Pribadi_ClassX5_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast("Spreadsheet Keuangan (.CSV) berhasil diunduh!");
+    }
+
+    function copyTableForGoogleSheets() {
+      let tsv = "Tanggal\tKeterangan\tKategori\tJenis\tUang Masuk (Rp)\tUang Keluar (Rp)\r\n";
+      state.kasTransactions.forEach(t => {
+        const isInc = t.type === "income";
+        tsv += `${t.date || ''}\t${t.desc || ''}\t${t.category || ''}\t${isInc ? 'Uang Masuk' : 'Uang Keluar'}\t${isInc ? t.amount : 0}\t${isInc ? 0 : t.amount}\r\n`;
+      });
+      navigator.clipboard.writeText(tsv).then(() => {
+        showToast("Format tabel berhasil disalin! Buka Google Sheets lalu tekan Ctrl+V (Paste).");
+      }).catch(() => {
+        showToast("Gagal menyalin ke clipboard.", "error");
+      });
+    }
+
+    function handleSpreadsheetUpload(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target.result;
+          const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+          if (lines.length < 2) {
+            showToast("File spreadsheet kosong atau tidak valid.", "error");
+            return;
+          }
+          let addedCount = 0;
+          for (let i = 1; i < lines.length; i++) {
+            const row = parseCSVRow(lines[i]);
+            if (row.length >= 4) {
+              const date = row[1] ? row[1].trim() : "";
+              const desc = row[2] ? row[2].trim() : "";
+              const cat = row[3] ? row[3].trim() : "Keuangan Pribadi";
+              const typeStr = (row[4] || "").toLowerCase();
+              const inVal = parseFloat(String(row[5] || "0").replace(/[^0-9.-]/g, '')) || 0;
+              const outVal = parseFloat(String(row[6] || "0").replace(/[^0-9.-]/g, '')) || 0;
+
+              let type = "income";
+              let amount = 0;
+              if (inVal > 0) {
+                type = "income"; amount = inVal;
+              } else if (outVal > 0) {
+                type = "expense"; amount = outVal;
+              } else {
+                const singleNominal = parseFloat(String(row[2] || row[3] || "0").replace(/[^0-9.-]/g, '')) || 0;
+                amount = singleNominal;
+                type = typeStr.includes("keluar") || typeStr.includes("expense") ? "expense" : "income";
+              }
+
+              if (amount > 0 && desc) {
+                state.kasTransactions.push({
+                  id: "kas-" + Date.now() + "-" + i,
+                  type: type,
+                  amount: amount,
+                  desc: desc.replace(/^"|"$/g, ''),
+                  category: cat.replace(/^"|"$/g, '') || "Keuangan Pribadi",
+                  date: (date && !isNaN(new Date(date).getTime())) ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
+                });
+                addedCount++;
+              }
+            }
+          }
+          if (addedCount > 0) {
+            saveKas();
+            closeModal("modalSpreadsheet");
+            showToast(`Berhasil mengimpor ${addedCount} catatan keuangan!`);
+          } else {
+            showToast("Format baris spreadsheet tidak cocok.", "error");
+          }
+        } catch (err) {
+          showToast("Gagal membaca file: " + err.message, "error");
+        }
+      };
+      reader.readAsText(file);
+      input.value = "";
+    }
+
+    function parseCSVRow(row) {
+      let result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < row.length; i++) {
+        const c = row[i];
+        if (c === '"') { inQuotes = !inQuotes; }
+        else if (c === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+        else { current += c; }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
+    function downloadKasTemplate() {
+      const template = "No,Tanggal,Keterangan,Kategori,Jenis,Uang Masuk (Rp),Uang Keluar (Rp),Saldo (Rp)\r\n" +
+        "1,2026-11-01,\"Uang Saku Mingguan Ortu\",\"Uang Saku / Jajan (Ortu)\",Uang Masuk,100000,0,100000\r\n" +
+        "2,2026-11-02,\"Makan Siang & Jajan Kantin\",\"Makan & Minum / Kantin\",Uang Keluar,0,15000,85000\r\n" +
+        "3,2026-11-03,\"Beli Buku & Fotokopi Tugas\",\"Alat Tulis / Buku / Fotokopi\",Uang Keluar,0,10000,75000\r\n";
+      const blob = new Blob(["\uFEFF" + template], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Template_Keuangan_Pribadi_ClassX5.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast("Template spreadsheet CSV telah diunduh.");
+    }
+
+    /* Modals & Backup Utilities */
+    function openModal(id) { const m = document.getElementById(id); if (m) m.classList.add("open"); }
+    function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove("open"); }
+    function closeModalOnBackdrop(e, id) { if (e.target.id === id) closeModal(id); }
+
+    function showToast(msg, type = "success") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerHTML = `<span>${escapeHtml(msg)}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function openBackupModal() {
+      document.getElementById("backupTextarea").value = JSON.stringify({
+        app: "Class X.5 SMAN 3 Jombang",
+        tasks: state.tasks,
+        materials: state.materials,
+        keuanganPribadi: state.kasTransactions,
+        hourlySpam: state.hourlySpam,
+        dailyRoutine: state.dailyRoutine
+      }, null, 2);
+      openModal("modalBackup");
+    }
+
+    function copyBackupData() {
+      const ta = document.getElementById("backupTextarea");
+      ta.select();
+      navigator.clipboard.writeText(ta.value);
+      showToast("Data JSON disalin ke clipboard!");
+    }
+
+    function downloadBackupJson() {
+      const a = document.createElement('a');
+      a.href = "data:text/json;charset=utf-8," + encodeURIComponent(document.getElementById("backupTextarea").value);
+      a.download = `Cadangan_ClassX5_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      showToast("File cadangan diunduh.");
+    }
+
+    /* Initialize Application on DOM Ready */
+    document.addEventListener("DOMContentLoaded", () => {
+      loadStorageData();
+      startClock();
+      detectCurrentDay();
+      checkNotificationStatus();
+      updateTaskStats();
+      updateKasSummary();
+      renderMaterials();
+
+      // Notification loops
+      checkAndTriggerTaskReminders();
+      checkHourlySpamReminders();
+      checkDailyRoutineReminder();
+
+      // Periodic check intervals
+      setInterval(checkAndTriggerTaskReminders, 30000); // every 30s
+      setInterval(checkHourlySpamReminders, 60000);      // check every 1 minute
+      setInterval(checkDailyRoutineReminder, 60000);     // check every 1 minute
+    });
+  </script>
+</body>
+</html>
