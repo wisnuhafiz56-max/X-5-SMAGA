@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -19,6 +21,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -34,6 +37,10 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 class MainActivity : ComponentActivity() {
+
+  companion object {
+    var activeInstance: MainActivity? = null
+  }
 
   private lateinit var webView: WebView
   private val channelId = "x5_reminders_channel_v2"
@@ -71,12 +78,15 @@ class MainActivity : ComponentActivity() {
   @SuppressLint("SetJavaScriptEnabled")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    activeInstance = this
 
     // Dark status bar and navigation bar to match monochromatic OLED theme #09090b
     window.statusBarColor = Color.parseColor("#09090b")
     window.navigationBarColor = Color.parseColor("#09090b")
 
     createNotificationChannel()
+    AttendanceReceiver.createNotificationChannel(this)
+    AttendanceReceiver.scheduleAlarms(this)
 
     webView = WebView(this).apply {
       setBackgroundColor(Color.parseColor("#09090b"))
@@ -95,9 +105,30 @@ class MainActivity : ComponentActivity() {
       }
 
       webViewClient = object : WebViewClient() {
+        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+          val uri = request?.url ?: return false
+          val urlStr = uri.toString()
+          if (urlStr.startsWith("http://") || urlStr.startsWith("https://")) {
+            val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+              addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            try {
+              this@MainActivity.startActivity(intent)
+              return true
+            } catch (e: Exception) {
+              return false
+            }
+          }
+          return false
+        }
+
         override fun onPageFinished(view: WebView?, url: String?) {
           super.onPageFinished(view, url)
           view?.evaluateJavascript("if (typeof checkNotificationStatus === 'function') checkNotificationStatus();", null)
+          updateAttendanceStatusInWeb()
+          if (intent?.getStringExtra("target_tab") == "presensi") {
+            view?.evaluateJavascript("if (typeof switchTab === 'function') switchTab('presensi');", null)
+          }
         }
       }
 
@@ -114,13 +145,14 @@ class MainActivity : ComponentActivity() {
           fileChooserCallback?.onReceiveValue(null)
           fileChooserCallback = filePathCallback
 
-          val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
+          val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "*/*"
             addCategory(Intent.CATEGORY_OPENABLE)
           }
 
+          val chooser = Intent.createChooser(intent, "Pilih Dokumen / File Spreadsheet")
           try {
-            fileChooserLauncher.launch(intent)
+            fileChooserLauncher.launch(chooser)
           } catch (e: Exception) {
             fileChooserCallback?.onReceiveValue(null)
             fileChooserCallback = null
@@ -152,6 +184,29 @@ class MainActivity : ComponentActivity() {
 
     // Check notification permission on modern Android
     checkNotificationPermission()
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    if (intent.getStringExtra("target_tab") == "presensi") {
+      webView.evaluateJavascript("if (typeof switchTab === 'function') switchTab('presensi');", null)
+    }
+    updateAttendanceStatusInWeb()
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    if (activeInstance == this) {
+      activeInstance = null
+    }
+  }
+
+  fun updateAttendanceStatusInWeb() {
+    val today = AttendanceReceiver.getTodayString()
+    val pagi = AttendanceReceiver.getAttendanceStatus(this, "pagi")
+    val sore = AttendanceReceiver.getAttendanceStatus(this, "sore")
+    webView.evaluateJavascript("if (typeof onAttendanceStatusUpdated === 'function') onAttendanceStatusUpdated('$pagi', '$sore', '$today');", null)
   }
 
   private fun createNotificationChannel() {
@@ -299,10 +354,73 @@ class MainActivity : ComponentActivity() {
     }
 
     @JavascriptInterface
+    fun openBrowser(url: String) {
+      runOnUiThread {
+        try {
+          val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+          }
+          context.startActivity(intent)
+        } catch (e: Exception) {
+          Toast.makeText(context, "Gagal membuka link: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+      }
+    }
+
+    @JavascriptInterface
+    fun copyToClipboard(label: String, text: String) {
+      runOnUiThread {
+        try {
+          val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+          val clip = ClipData.newPlainText(label, text)
+          clipboard.setPrimaryClip(clip)
+          Toast.makeText(context, "$label disalin ke clipboard!", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+          Toast.makeText(context, "Gagal menyalin: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+      }
+    }
+
+    @JavascriptInterface
     fun showToast(message: String) {
       runOnUiThread {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
       }
+    }
+
+    @JavascriptInterface
+    fun getAttendanceStatus(session: String): String {
+      return AttendanceReceiver.getAttendanceStatus(context, session)
+    }
+
+    @JavascriptInterface
+    fun setAttendanceStatus(session: String, status: String) {
+      AttendanceReceiver.setAttendanceStatus(context, session, status)
+      runOnUiThread {
+        updateAttendanceStatusInWeb()
+      }
+      AttendanceReceiver.scheduleAlarms(context)
+    }
+
+    @JavascriptInterface
+    fun resetAttendanceStatus(session: String) {
+      AttendanceReceiver.resetAttendanceStatus(context, session)
+      runOnUiThread {
+        updateAttendanceStatusInWeb()
+      }
+      AttendanceReceiver.scheduleAlarms(context)
+    }
+
+    @JavascriptInterface
+    fun testAttendanceNotification(session: String) {
+      runOnUiThread {
+        AttendanceReceiver().showNotification(context, session, isTest = true)
+      }
+    }
+
+    @JavascriptInterface
+    fun scheduleAttendanceAlarms() {
+      AttendanceReceiver.scheduleAlarms(context)
     }
   }
 }

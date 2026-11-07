@@ -4,14 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#070709">
-  <meta name="description" content="Aplikasi mobile-friendly monokromatik khusus siswa Kelas X-5 SMA Negeri 3 Jombang. Jadwal pelajaran, pengingat tugas harian & spam per jam, materi/rangkuman PPT, dan buku catatan keuangan pribadi.">
+  <meta name="description" content="Aplikasi mobile-friendly monokromatik khusus siswa Kelas X-5 SMA Negeri 3 Jombang. Jadwal pelajaran, tugas, presensi online & BBO, materi PPT/PDF, dan buku keuangan pribadi.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>CLASS X.5 • SMAN 3 Jombang</title>
 
   <!-- PWA Manifest via Data URI -->
-  <link rel="manifest" href='data:application/manifest+json,{"name":"Class X.5 SMAN 3 Jombang","short_name":"Class X.5","start_url":".","display":"standalone","background_color":"%23070709","theme_color":"%23070709","description":"Jadwal, Tugas & Pengingat Spam, Materi PPT, dan Catatan Keuangan Pribadi Siswa Class X.5","icons":[{"src":"logo.png","sizes":"192x192 512x512","type":"image/png"}]}'>
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Class X.5 SMAN 3 Jombang","short_name":"Class X.5","start_url":".","display":"standalone","background_color":"%23070709","theme_color":"%23070709","description":"Jadwal, Tugas, Presensi & BBO, Materi PPT, dan Catatan Keuangan Pribadi Siswa Class X.5","icons":[{"src":"logo.png","sizes":"192x192 512x512","type":"image/png"}]}'>
   <link rel="icon" type="image/png" href="logo.png">
+
+  <!-- Local Offline Libraries for Excel (.xlsx) and PDF Viewer -->
+  <script src="xlsx.full.min.js"></script>
+  <script src="pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
+    }
+  </script>
 
   <style>
     /* ==========================================================================
@@ -65,7 +74,7 @@
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
-      padding-bottom: 92px; /* space for bottom navigation */
+      padding-bottom: 96px; /* space for bottom navigation */
     }
 
     .app-container {
@@ -328,12 +337,12 @@
       border-radius: var(--radius-full);
     }
 
-    /* Cards & Schedule Items */
+    /* Cards & Section Titles */
     .card-title-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 4px;
+      gap: 8px;
     }
 
     .card-title {
@@ -427,16 +436,65 @@
       gap: 4px;
     }
 
-    /* Notification & Control Cards in Tab 2 */
-    .control-card {
+    /* Collapsible Settings Accordion in Tab 2 */
+    .settings-accordion {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-lg);
-      padding: 14px 16px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+      margin-top: 6px;
+    }
+
+    .accordion-header {
+      padding: 12px 16px;
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: var(--bg-card);
+    }
+
+    .accordion-header h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .accordion-header svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-secondary);
+      transition: transform 0.2s ease;
+    }
+
+    .accordion-header.open svg {
+      transform: rotate(180deg);
+    }
+
+    .accordion-body {
+      display: none;
+      padding: 0 16px 16px;
       flex-direction: column;
       gap: 12px;
-      box-shadow: var(--shadow-sm);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .accordion-body.open {
+      display: flex;
+    }
+
+    .control-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .control-row {
@@ -463,7 +521,7 @@
       font-size: 11px;
       color: var(--text-secondary);
       line-height: 1.4;
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
     /* Custom Switch Toggle */
@@ -485,7 +543,7 @@
       position: absolute;
       cursor: pointer;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-color: var(--bg-surface);
+      background-color: var(--bg-card);
       border: 1px solid var(--border-subtle);
       transition: .3s;
       border-radius: 24px;
@@ -535,7 +593,7 @@
       font-family: inherit;
       font-size: 13px;
       font-weight: 600;
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: var(--radius-md);
       border: 1px solid transparent;
       cursor: pointer;
@@ -574,10 +632,23 @@
       background: rgba(255,255,255,0.04);
     }
 
-    .btn-danger {
-      background: var(--danger-bg);
-      color: var(--danger-text);
-      border-color: var(--danger-border);
+    .btn-copy {
+      background: #181822;
+      border: 1px solid var(--border-focus);
+      color: var(--text-primary);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .btn-copy:hover {
+      background: var(--accent-white);
+      color: var(--bg-main);
     }
 
     /* Tasks Stats & Filter */
@@ -668,7 +739,7 @@
     }
 
     .task-card.completed {
-      opacity: 0.5;
+      opacity: 0.55;
       border-color: var(--border-subtle);
     }
 
@@ -788,7 +859,94 @@
     .delete-btn:hover { color: var(--danger-text); }
     .delete-btn svg { width: 14px; height: 14px; stroke: currentColor; }
 
-    /* Material / PPT / Document Cards */
+    /* Portal Presensi & BBO Cards */
+    .portal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+
+    .portal-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .portal-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .portal-tag {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+    }
+    .portal-tag.lokasi { background: #142718; color: #86efac; border: 1px solid #1e4526; }
+    .portal-tag.wajah { background: #28160a; color: #fdba74; border: 1px solid #7c2d12; }
+    .portal-tag.bbo { background: #0a1728; color: #93c5fd; border: 1px solid #1e3a8a; }
+
+    .portal-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--accent-white);
+      margin-top: 4px;
+    }
+
+    .portal-url-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+      word-break: break-all;
+    }
+
+    .credential-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cred-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .cred-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-width: 65px;
+    }
+
+    .cred-value {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text-primary);
+      font-weight: 600;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Materials / PPT / Document Cards */
     .search-input-box {
       position: relative;
       display: flex;
@@ -1016,7 +1174,7 @@
     .kas-amount.income { color: #86efac; }
     .kas-amount.expense { color: #fca5a5; }
 
-    /* Bottom Navigation Bar */
+    /* Bottom Navigation Bar (5 TABS) */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -1026,7 +1184,7 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-top: 1px solid var(--border-subtle);
-      padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
       z-index: 100;
     }
 
@@ -1034,8 +1192,8 @@
       max-width: 540px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 2px;
     }
 
     .nav-item {
@@ -1044,8 +1202,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      padding: 6px 4px;
+      gap: 3px;
+      padding: 6px 2px;
       color: var(--text-muted);
       cursor: pointer;
       border-radius: var(--radius-md);
@@ -1054,15 +1212,16 @@
     }
 
     .nav-item svg {
-      width: 20px;
-      height: 20px;
+      width: 19px;
+      height: 19px;
       stroke: currentColor;
     }
 
     .nav-item span {
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.1px;
+      white-space: nowrap;
     }
 
     .nav-item.active {
@@ -1078,7 +1237,7 @@
       content: '';
       position: absolute;
       top: 0;
-      width: 20px;
+      width: 18px;
       height: 2px;
       background: var(--accent-white);
       border-radius: var(--radius-full);
@@ -1118,7 +1277,7 @@
       border-top-right-radius: 20px;
       width: 100%;
       max-width: 540px;
-      max-height: 85vh;
+      max-height: 88vh;
       overflow-y: auto;
       padding: 20px 18px 30px;
       display: flex;
@@ -1217,7 +1376,7 @@
       border: 2px dashed var(--border-focus);
       background: var(--bg-surface);
       border-radius: var(--radius-md);
-      padding: 20px;
+      padding: 22px 16px;
       text-align: center;
       cursor: pointer;
       display: flex;
@@ -1226,6 +1385,10 @@
       gap: 6px;
       transition: all 0.2s ease;
     }
+    .drop-zone:hover {
+      border-color: var(--accent-white);
+      background: var(--bg-card-hover);
+    }
 
     .drop-zone svg {
       width: 28px;
@@ -1233,8 +1396,8 @@
       stroke: var(--text-muted);
     }
 
-    .drop-zone p { font-size: 12px; font-weight: 600; color: var(--text-primary); }
-    .drop-zone span { font-size: 10px; color: var(--text-muted); }
+    .drop-zone p { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .drop-zone span { font-size: 11px; color: var(--text-muted); }
 
     .selected-file-badge {
       display: none;
@@ -1249,23 +1412,44 @@
       margin-top: 8px;
     }
 
-    /* Document Viewer Modal */
-    .doc-viewer-frame {
+    /* In-App PDF Canvas Viewer */
+    .pdf-viewer-box {
       width: 100%;
-      height: 380px;
       background: #141418;
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
-      overflow: hidden;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      overflow: hidden;
     }
 
-    .doc-viewer-frame iframe {
+    .pdf-canvas-container {
       width: 100%;
-      height: 100%;
-      border: none;
+      max-height: 380px;
+      overflow-y: auto;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+      background: #1c1c24;
+      padding: 10px;
+    }
+
+    #pdfCanvas {
+      max-width: 100%;
+      height: auto;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+      border-radius: 4px;
+    }
+
+    .pdf-nav-bar {
+      width: 100%;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     /* Toast Notification */
@@ -1347,7 +1531,6 @@
 
     <!-- TAB 1: JADWAL PELAJARAN -->
     <main id="tabSchedule" class="tab-content active">
-      <!-- Weekend Alert Box (Dynamically shown on Saturday & Sunday) -->
       <div class="weekend-banner" id="weekendBannerBox" style="display: none;"></div>
 
       <div class="day-selector" id="daySelector">
@@ -1366,75 +1549,17 @@
       <div class="schedule-list" id="scheduleListContainer"></div>
     </main>
 
-    <!-- TAB 2: TUGAS & PENGINGAT (SPAM & DND) -->
+    <!-- TAB 2: DAFTAR TUGAS & PR (FRONT & CENTER!) -->
     <main id="tabTasks" class="tab-content">
-      <!-- 1. Notification Permission Status -->
-      <div class="control-card">
-        <div class="control-row">
-          <div class="control-info">
-            <h4>Izin Notifikasi HP</h4>
-            <p>Wajib aktif agar sistem dapat mengirimkan alarm pengingat tugas ke status bar ponsel.</p>
-          </div>
-          <span class="perm-badge default" id="permBadge">Cek Izin...</span>
+      <!-- Top Actions Row -->
+      <div class="card-title-row">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="card-title">Daftar Tugas & PR</span>
+          <span class="time-badge" id="taskTotalCountBadge">0 Tugas</span>
         </div>
-        <button class="btn btn-primary btn-sm btn-block" id="btnRequestNotif" onclick="requestNotificationPermission()">
-          Aktifkan / Periksa Izin Notifikasi
-        </button>
-      </div>
-
-      <!-- 2. Hourly Nagging / Spam Reminder Switch -->
-      <div class="control-card">
-        <div class="control-row">
-          <div class="control-info">
-            <h4>🚨 Mode Spam Pengingat Tiap 1 Jam</h4>
-            <p>Otomatis spam notifikasi bersuara & bergetar setiap 1 jam jika ada tugas yang belum ditandai Selesai.</p>
-          </div>
-          <label class="custom-switch">
-            <input type="checkbox" id="toggleHourlySpam" onchange="toggleHourlySpam(this.checked)" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn btn-secondary btn-sm btn-block" onclick="triggerHourlyNagTest()">
-            ⚡ Tes Notifikasi Spam Sekarang
-          </button>
-        </div>
-      </div>
-
-      <!-- 3. Daily Routine Reminder -->
-      <div class="control-card">
-        <div class="control-row">
-          <div class="control-info">
-            <h4>⏰ Pengingat Rutin Harian</h4>
-            <p>Briefing jadwal pelajaran dan pengecekan tugas otomatis setiap hari.</p>
-          </div>
-          <label class="custom-switch">
-            <input type="checkbox" id="toggleDailyRoutine" onchange="toggleDailyRoutine(this.checked)" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-          <span style="font-size: 12px; color: var(--text-secondary);">Waktu Pengingat Harian:</span>
-          <select id="selectDailyRoutineTime" class="form-control" style="padding: 4px 8px; width: auto; font-size: 12px;" onchange="updateDailyRoutineTime(this.value)">
-            <option value="06:00">Pukul 06.00 WIB (Pagi)</option>
-            <option value="06.30">Pukul 06.30 WIB (Pagi)</option>
-            <option value="19:00">Pukul 19.00 WIB (Malam)</option>
-            <option value="19:30">Pukul 19.30 WIB (Malam)</option>
-            <option value="20:00">Pukul 20.00 WIB (Malam)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 4. Bypass Do Not Disturb (DND) Setting Card -->
-      <div class="control-card">
-        <div class="control-row">
-          <div class="control-info">
-            <h4>🔕 Abaikan Fitur "Jangan Ganggu" (DND)</h4>
-            <p>Pengingat telah disetel ke Kategori ALARM prioritas tertinggi agar dapat menembus mode Jangan Ganggu di HP Android.</p>
-          </div>
-        </div>
-        <button class="btn btn-outline btn-sm btn-block" onclick="openDndChannelSettings()">
-          ⚙️ Buka Pengaturan Jangan Ganggu di HP
+        <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Tambah Tugas
         </button>
       </div>
 
@@ -1445,21 +1570,290 @@
         <div class="stat-box"><div class="stat-number" id="statDoneTasks" style="color: #86efac;">0</div><div class="stat-label">Selesai</div></div>
       </div>
 
-      <!-- Filter & Add Button -->
-      <div class="card-title-row">
-        <div class="filter-bar">
-          <button class="filter-chip active" onclick="setTaskFilter('all', this)">Semua</button>
-          <button class="filter-chip" onclick="setTaskFilter('pending', this)">Belum Selesai</button>
-          <button class="filter-chip" onclick="setTaskFilter('done', this)">Selesai</button>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()">+ Tambah Tugas</button>
+      <!-- Filter Chips -->
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="setTaskFilter('all', this)">Semua Tugas</button>
+        <button class="filter-chip" onclick="setTaskFilter('pending', this)">Belum Selesai</button>
+        <button class="filter-chip" onclick="setTaskFilter('done', this)">Selesai</button>
       </div>
 
-      <!-- Task List Container -->
+      <!-- THE TASK LIST (DIRECTLY VISIBLE HERE!) -->
       <div class="task-list" id="taskListContainer"></div>
+
+      <!-- Collapsible Notification & Settings Section -->
+      <div class="settings-accordion">
+        <div class="accordion-header" id="accordionSettingsHeader" onclick="toggleSettingsAccordion()">
+          <h4>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Pengaturan Pengingat & Spam Notifikasi
+          </h4>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="accordion-body" id="accordionSettingsBody">
+          <div class="control-card">
+            <div class="control-row">
+              <div class="control-info">
+                <h4>Izin Notifikasi HP</h4>
+                <p>Status izin pengiriman alarm ke status bar HP.</p>
+              </div>
+              <span class="perm-badge default" id="permBadge">Cek Izin...</span>
+            </div>
+            <button class="btn btn-primary btn-sm btn-block" id="btnRequestNotif" onclick="requestNotificationPermission()">
+              Periksa / Aktifkan Izin Notifikasi
+            </button>
+          </div>
+
+          <div class="control-card">
+            <div class="control-row">
+              <div class="control-info">
+                <h4>🚨 Mode Spam Tiap 1 Jam</h4>
+                <p>Notifikasi bersuara & bergetar setiap 1 jam jika ada tugas belum selesai.</p>
+              </div>
+              <label class="custom-switch">
+                <input type="checkbox" id="toggleHourlySpam" onchange="toggleHourlySpam(this.checked)" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <button class="btn btn-secondary btn-sm btn-block" onclick="triggerHourlyNagTest()">
+              ⚡ Tes Notifikasi Spam Sekarang
+            </button>
+          </div>
+
+          <div class="control-card">
+            <div class="control-row">
+              <div class="control-info">
+                <h4>⏰ Pengingat Rutin Harian</h4>
+                <p>Briefing jadwal pelajaran dan cek tugas setiap hari.</p>
+              </div>
+              <label class="custom-switch">
+                <input type="checkbox" id="toggleDailyRoutine" onchange="toggleDailyRoutine(this.checked)" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg-card); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <span style="font-size: 11px; color: var(--text-secondary);">Waktu Briefing:</span>
+              <select id="selectDailyRoutineTime" class="form-control" style="padding: 3px 6px; width: auto; font-size: 11px;" onchange="updateDailyRoutineTime(this.value)">
+                <option value="06:00">06.00 WIB (Pagi)</option>
+                <option value="06.30">06.30 WIB (Pagi)</option>
+                <option value="19:00">19.00 WIB (Malam)</option>
+                <option value="19:30">19.30 WIB (Malam)</option>
+                <option value="20:00">20.00 WIB (Malam)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="control-card">
+            <div class="control-row">
+              <div class="control-info">
+                <h4>🔕 Abaikan Fitur "Jangan Ganggu" (DND)</h4>
+                <p>Pengingat disetel kategori Alarm agar tetap berbunyi saat mode DND aktif.</p>
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm btn-block" onclick="openDndChannelSettings()">
+              ⚙️ Buka Pengaturan Jangan Ganggu di HP
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
 
-    <!-- TAB 3: MATERI PPT & RANGKUMAN (BUKA PDF/PPT) -->
+    <!-- TAB 3: PRESENSI ONLINE & BBO SMAN 3 JOMBANG -->
+    <main id="tabPresensi" class="tab-content">
+      <!-- KARTU PENGINGAT 5 MENITAN DAN STATUS ABSEN HARI INI -->
+      <div class="control-card" style="border-left: 4px solid var(--accent-white);">
+        <div class="control-row">
+          <div class="control-info">
+            <h4 style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+              <span>🔔 Pengingat Presensi Otomatis</span>
+              <span class="status-tag active" style="font-size: 10px; padding: 2px 6px;">Ulang Tiap 5 Menit</span>
+            </h4>
+            <p>Muncul tiap 5 menit saat <strong>06.30 - 07.00</strong> (Pagi) & <strong>15.00 - 15.30</strong> (Pulang). Otomatis berhenti ketika kamu klik <em>"Sudah Absen"</em> atau <em>"Tidak Masuk"</em> di notifikasi.</p>
+          </div>
+          <label class="custom-switch">
+            <input type="checkbox" id="toggleAttendanceReminder" onchange="toggleAttendanceReminder(this.checked)" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- STATUS SESI PRESENSI HARI INI -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px;">
+          <!-- SESI PAGI -->
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--accent-white);">🌅 Presensi Pagi (06.30 - 07.00 WIB)</span>
+              <span id="badgeStatusPagi" class="status-tag">Memuat...</span>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary btn-sm" onclick="setAttendanceStatusFromUI('pagi', 'sudah')" style="flex: 1; font-size: 11px;">
+                ✅ Sudah Absen
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setAttendanceStatusFromUI('pagi', 'tidak_masuk')" style="flex: 1; font-size: 11px;">
+                ❌ Tidak Masuk
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="resetAttendanceStatusFromUI('pagi')" title="Reset Status" style="padding: 6px 10px; font-size: 11px;">
+                ↺
+              </button>
+            </div>
+          </div>
+
+          <!-- SESI PULANG -->
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--accent-white);">🌇 Presensi Pulang (15.00 - 15.30 WIB)</span>
+              <span id="badgeStatusSore" class="status-tag">Memuat...</span>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary btn-sm" onclick="setAttendanceStatusFromUI('sore', 'sudah')" style="flex: 1; font-size: 11px;">
+                ✅ Sudah Absen
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setAttendanceStatusFromUI('sore', 'tidak_masuk')" style="flex: 1; font-size: 11px;">
+                ❌ Tidak Masuk
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="resetAttendanceStatusFromUI('sore')" title="Reset Status" style="padding: 6px 10px; font-size: 11px;">
+                ↺
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button type="button" class="btn btn-secondary btn-sm btn-block" onclick="testAttendanceNotification('pagi')">
+            ⚡ Tes Notifikasi Presensi (Coba Tombol Aksi di Notifikasi)
+          </button>
+        </div>
+      </div>
+
+      <!-- PORTAL 1: ABSEN LOKASI -->
+      <div class="portal-card">
+        <div class="portal-card-header">
+          <div>
+            <div class="portal-badge-row">
+              <span class="portal-tag lokasi">1. Absen Lokasi</span>
+              <span class="time-badge">e-Rapor AIO</span>
+            </div>
+            <div class="portal-title">Presensi Berbasis Lokasi (GPS)</div>
+            <div class="portal-url-sub">eraporaio.sman3jombang.sch.id/login</div>
+          </div>
+        </div>
+
+        <div class="credential-box">
+          <div class="cred-row">
+            <span class="cred-label">Username:</span>
+            <span class="cred-value" id="credUserLokasi">Belum diatur</span>
+            <button class="btn-copy" onclick="copyAccountCredential('absenLokasi', 'username', 'Username Absen Lokasi')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin
+            </button>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">Password:</span>
+            <span class="cred-value" id="credPassLokasi">••••••••</span>
+            <button class="btn-copy" onclick="copyAccountCredential('absenLokasi', 'password', 'Password Absen Lokasi')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary btn-sm btn-block" onclick="openExternalPortal('https://eraporaio.sman3jombang.sch.id/login', 'Absen Lokasi')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            Buka Web Absen Lokasi
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="openEditAccountModal('absenLokasi', 'Absen Lokasi (e-Rapor)')">
+            ✏️ Edit Akun
+          </button>
+        </div>
+      </div>
+
+      <!-- PORTAL 2: ABSEN WAJAH -->
+      <div class="portal-card">
+        <div class="portal-card-header">
+          <div>
+            <div class="portal-badge-row">
+              <span class="portal-tag wajah">2. Absen Wajah</span>
+              <span class="time-badge">Sigmajo SMAN 3</span>
+            </div>
+            <div class="portal-title">Presensi Wajah / Face Recognition</div>
+            <div class="portal-url-sub">sigmajo.sman3jombang.sch.id/login.php</div>
+          </div>
+        </div>
+
+        <div class="credential-box">
+          <div class="cred-row">
+            <span class="cred-label">Username:</span>
+            <span class="cred-value" id="credUserWajah">Belum diatur</span>
+            <button class="btn-copy" onclick="copyAccountCredential('absenWajah', 'username', 'Username Absen Wajah')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin
+            </button>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">Password:</span>
+            <span class="cred-value" id="credPassWajah">••••••••</span>
+            <button class="btn-copy" onclick="copyAccountCredential('absenWajah', 'password', 'Password Absen Wajah')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary btn-sm btn-block" onclick="openExternalPortal('https://sigmajo.sman3jombang.sch.id/login.php', 'Absen Wajah')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+            Buka Web Absen Wajah
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="openEditAccountModal('absenWajah', 'Absen Wajah (Sigmajo)')">
+            ✏️ Edit Akun
+          </button>
+        </div>
+      </div>
+
+      <!-- PORTAL 3: BBO SMAN 3 JOMBANG (LMS) -->
+      <div class="portal-card">
+        <div class="portal-card-header">
+          <div>
+            <div class="portal-badge-row">
+              <span class="portal-tag bbo">3. Portal BBO</span>
+              <span class="time-badge">LMS Sekolah</span>
+            </div>
+            <div class="portal-title">Belajar Bersama Online (BBO)</div>
+            <div class="portal-url-sub">lms.sman3jombang.sch.id</div>
+          </div>
+        </div>
+
+        <div class="credential-box">
+          <div class="cred-row">
+            <span class="cred-label">Username:</span>
+            <span class="cred-value" id="credUserBbo">Belum diatur</span>
+            <button class="btn-copy" onclick="copyAccountCredential('bboLms', 'username', 'Username BBO LMS')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin
+            </button>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">Password:</span>
+            <span class="cred-value" id="credPassBbo">••••••••</span>
+            <button class="btn-copy" onclick="copyAccountCredential('bboLms', 'password', 'Password BBO LMS')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary btn-sm btn-block" onclick="openExternalPortal('https://lms.sman3jombang.sch.id/', 'BBO SMAN 3 Jombang')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            Buka Web BBO LMS
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="openEditAccountModal('bboLms', 'BBO LMS SMAN 3')">
+            ✏️ Edit Akun
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 4: MATERI PPT & RANGKUMAN (BUKA PDF/PPT) -->
     <main id="tabMaterials" class="tab-content">
       <div class="search-input-box">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -1467,8 +1861,14 @@
       </div>
 
       <div style="display: flex; gap: 8px;">
-        <button class="btn btn-primary btn-sm btn-block" onclick="openAddMaterialModal('file')">Upload PPT / Dokumen</button>
-        <button class="btn btn-secondary btn-sm btn-block" onclick="openAddMaterialModal('text')">Tulis Rangkuman</button>
+        <button class="btn btn-primary btn-sm btn-block" onclick="openAddMaterialModal('file')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Upload PPT / PDF
+        </button>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="openAddMaterialModal('text')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Tulis Catatan
+        </button>
       </div>
 
       <div class="filter-bar" id="materialFilterBar">
@@ -1492,7 +1892,7 @@
       <div class="schedule-list" id="materialListContainer"></div>
     </main>
 
-    <!-- TAB 4: KEUANGAN PRIBADI SISWA (BUKU KAS PRIBADI & SPREADSHEET) -->
+    <!-- TAB 5: KEUANGAN PRIBADI SISWA (BUKU KAS PRIBADI & SPREADSHEET XLSX) -->
     <main id="tabKas" class="tab-content">
       <div class="kas-summary-card">
         <div class="kas-balance-label">
@@ -1518,7 +1918,8 @@
           Catat Keuangan
         </button>
         <button class="btn btn-secondary btn-sm btn-block" onclick="openSpreadsheetModal()">
-          Spreadsheet (CSV/Excel)
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          Spreadsheet (XLSX / CSV)
         </button>
       </div>
 
@@ -1535,7 +1936,7 @@
     </main>
   </div>
 
-  <!-- BOTTOM NAVIGATION (4 TABS) -->
+  <!-- BOTTOM NAVIGATION (5 TABS) -->
   <nav class="bottom-nav">
     <div class="nav-inner">
       <button class="nav-item active" onclick="switchTab('tabSchedule', this)">
@@ -1546,39 +1947,73 @@
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         <span>Tugas</span>
       </button>
+      <button class="nav-item" onclick="switchTab('tabPresensi', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span>Absen & BBO</span>
+      </button>
       <button class="nav-item" onclick="switchTab('tabMaterials', this)">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <span>Materi PPT</span>
+        <span>Materi</span>
       </button>
       <button class="nav-item" onclick="switchTab('tabKas', this)">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-        <span>Keuangan</span>
+        <span>Dompet</span>
       </button>
     </div>
   </nav>
 
-  <!-- MODAL BUKA / LIHAT DOKUMEN (PDF & PPT) -->
+  <!-- MODAL EDIT KREDENSIAL AKUN (ABSEN & BBO) -->
+  <div class="modal-backdrop" id="modalEditAccount" onclick="closeModalOnBackdrop(event, 'modalEditAccount')">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="editAccountModalTitle">Edit Akun Presensi / BBO</h3>
+        <button class="close-btn" onclick="closeModal('modalEditAccount')">✕</button>
+      </div>
+      <form id="formEditAccount" onsubmit="handleSaveAccount(event)">
+        <input type="hidden" id="editAccountKey">
+        <div class="form-group">
+          <label>Username / NISN / No. Induk *</label>
+          <input type="text" id="editAccountUsername" class="form-control" placeholder="Contoh: 12345 / nama_siswa" required>
+        </div>
+        <div class="form-group">
+          <label>Password / Sandi *</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="editAccountPassword" class="form-control" style="width: 100%; padding-right: 40px;" placeholder="Masukkan password" required>
+            <button type="button" class="btn-copy" style="position: absolute; right: 8px;" onclick="togglePasswordVisibility('editAccountPassword')">👁️</button>
+          </div>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">Akun disimpan secara lokal dan aman di HP Anda untuk mempermudah salin-tempel (copas) langsung ke portal sekolah.</p>
+        <button type="submit" class="btn btn-primary btn-block">Simpan Kredensial Akun</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL BUKA / LIHAT DOKUMEN (PDF & PPT) DENGAN PDF.JS CANVAS VIEWER -->
   <div class="modal-backdrop" id="modalViewDocument" onclick="closeModalOnBackdrop(event, 'modalViewDocument')">
     <div class="modal-container">
       <div class="modal-header">
         <h3 id="docModalTitle">Buka Dokumen</h3>
         <button class="close-btn" onclick="closeModal('modalViewDocument')">✕</button>
       </div>
-      <div style="display: flex; gap: 8px; align-items: center;">
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
         <span class="time-badge" id="docModalSubject">Mapel</span>
         <span class="status-tag active" id="docModalSize">Ukuran</span>
       </div>
-      <div id="docViewerContainer">
-        <!-- Will contain iframe for PDF or info box for PPT/DOC -->
-      </div>
+
+      <!-- File Switcher Tabs if material contains multiple files -->
+      <div id="docFileTabsContainer" style="display: none; margin-top: 10px; margin-bottom: 4px;"></div>
+
+      <!-- Dedicated Dynamic Viewer Container -->
+      <div id="docViewerContainer"></div>
+
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <button type="button" class="btn btn-primary btn-block" id="btnLaunchExternalDoc">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          Buka di Aplikasi Luar (WPS Office / Acrobat / Drive)
+          Buka di Aplikasi Luar (WPS Office / Acrobat / Drive / PowerPoint)
         </button>
         <button type="button" class="btn btn-secondary btn-block" id="btnDownloadDoc">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          Unduh File Dokumen
+          Unduh File ke Penyimpanan HP
         </button>
       </div>
     </div>
@@ -1600,16 +2035,16 @@
     </div>
   </div>
 
-  <!-- MODAL UPLOAD MATERI / PPT -->
+  <!-- MODAL UPLOAD MATERI / PPT / PDF -->
   <div class="modal-backdrop" id="modalAddMaterial" onclick="closeModalOnBackdrop(event, 'modalAddMaterial')">
     <div class="modal-container">
       <div class="modal-header">
-        <h3 id="modalMaterialTitle">Upload Materi / PPT</h3>
+        <h3 id="modalMaterialTitle">Upload Materi / PPT / PDF</h3>
         <button class="close-btn" onclick="closeModal('modalAddMaterial')">✕</button>
       </div>
       <div class="type-selector">
         <button type="button" class="type-btn active" id="btnModeFile" onclick="setMaterialMode('file')">Upload File (PPT/PDF)</button>
-        <button type="button" class="type-btn" id="btnModeText" onclick="setMaterialMode('text')">Tulis Rangkuman</button>
+        <button type="button" class="type-btn" id="btnModeText" onclick="setMaterialMode('text')">Tulis Catatan</button>
       </div>
       <form id="formAddMaterial" onsubmit="handleAddMaterial(event)">
         <div class="form-group">
@@ -1623,19 +2058,20 @@
             <option value="Biologi">Biologi</option><option value="Matematika">Matematika</option><option value="Fisika">Fisika</option><option value="Kimia">Kimia</option><option value="Informatika">Informatika</option><option value="Geografi">Geografi</option><option value="Ekonomi">Ekonomi</option><option value="Sejarah">Sejarah</option><option value="Sosiologi">Sosiologi</option><option value="B. Indonesia">B. Indonesia</option><option value="Bahasa Inggris">Bahasa Inggris</option><option value="Bahasa Jawa">Bahasa Jawa</option><option value="P. Pancasila">P. Pancasila</option><option value="PAI">PAI</option><option value="PJOK">PJOK</option><option value="Seni Budaya">Seni Budaya</option><option value="Lainnya">Lainnya</option>
           </select>
         </div>
+
         <div id="sectionFileUpload" class="form-group">
-          <label>Pilih File Presentasi (PPT) / Dokumen *</label>
-          <div class="drop-zone" id="materialDropZone" onclick="document.getElementById('materialFileInput').click()">
+          <label>Pilih File Presentasi (PPT) / Dokumen (PDF/DOC) * <span style="color: var(--accent-white); font-weight: 700;">(Bisa pilih 2 atau lebih file)</span></label>
+          <label for="materialFileInput" class="drop-zone" id="materialDropZone">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            <p>Ketuk untuk memilih file PPT / PDF / Dokumen</p>
-            <span>Mendukung: .ppt, .pptx, .pdf, .doc, .docx, .png, .jpg</span>
-          </div>
-          <input type="file" id="materialFileInput" style="display: none;" accept=".ppt,.pptx,.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.zip" onchange="handleFileSelected(this)">
-          <div class="selected-file-badge" id="selectedFileBadge">
-            <span id="selectedFileName">Nama file</span>
-            <button type="button" class="close-btn" onclick="clearSelectedFile(event)">✕</button>
-          </div>
+            <p>Ketuk untuk memilih 1 atau lebih file PDF / PPT</p>
+            <span>Bisa upload 2+ file sekaligus dalam 1 materi (PDF, PPT, DOC, dll.)</span>
+          </label>
+          <input type="file" id="materialFileInput" accept="*/*" multiple style="opacity: 0; position: absolute; z-index: -1; width: 1px; height: 1px;" onchange="handleFilesSelected(this)">
+          
+          <!-- Container for multiple selected files -->
+          <div id="selectedFilesContainer" style="display: none; flex-direction: column; gap: 6px; margin-top: 10px;"></div>
         </div>
+
         <div id="sectionTextNotes" class="form-group" style="display: none;">
           <label>Isi Catatan / Rangkuman Pelajaran *</label>
           <textarea id="materialTextContent" class="form-control" rows="6" placeholder="Tuliskan rangkuman materi di sini..."></textarea>
@@ -1706,32 +2142,37 @@
     </div>
   </div>
 
-  <!-- MODAL SPREADSHEET KEUANGAN PRIBADI -->
+  <!-- MODAL SPREADSHEET (MENDUKUNG .XLSX DAN .CSV) -->
   <div class="modal-backdrop" id="modalSpreadsheet" onclick="closeModalOnBackdrop(event, 'modalSpreadsheet')">
     <div class="modal-container">
       <div class="modal-header">
-        <h3>Spreadsheet Keuangan Pribadi</h3>
+        <h3>Kelola Spreadsheet Keuangan (.XLSX & .CSV)</h3>
         <button class="close-btn" onclick="closeModal('modalSpreadsheet')">✕</button>
       </div>
 
       <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
-        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">1. Unduh Spreadsheet (.CSV / Excel)</h4>
+        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">1. Upload / Impor File Excel (.XLSX) atau CSV</h4>
+        <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Unggah file spreadsheet <strong>.xlsx (Microsoft Excel)</strong> atau <strong>.csv</strong> untuk memasukkan transaksi otomatis.</p>
+        
+        <label for="spreadsheetFileInput" class="btn btn-primary btn-sm btn-block" style="cursor: pointer; text-align: center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Pilih File Excel (.XLSX) / CSV
+        </label>
+        <input type="file" id="spreadsheetFileInput" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="opacity:0; position:absolute; z-index:-1; width:1px; height:1px;" onchange="handleSpreadsheetUpload(this)">
+        
+        <a href="javascript:void(0)" onclick="downloadKasTemplate()" style="font-size: 11px; color: var(--text-secondary); text-align: center; text-decoration: underline; margin-top: 4px;">Unduh Template Spreadsheet Contoh (.CSV / Excel)</a>
+      </div>
+
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">2. Unduh Spreadsheet Keuangan (.CSV / Excel)</h4>
         <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Ekspor seluruh transaksi dompet pribadimu menjadi file spreadsheet yang siap dibuka di Microsoft Excel atau Google Sheets.</p>
-        <button class="btn btn-primary btn-sm btn-block" onclick="downloadKasSpreadsheet()">Unduh File Spreadsheet (.CSV)</button>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="downloadKasSpreadsheet()">Unduh File Spreadsheet (.CSV)</button>
       </div>
 
       <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
-        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">2. Salin Format Tabel Google Sheets</h4>
+        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">3. Salin Format Tabel Google Sheets</h4>
         <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Salin ke clipboard untuk langsung ditempel (paste) ke Google Sheets di laptop atau HP.</p>
-        <button class="btn btn-secondary btn-sm btn-block" onclick="copyTableForGoogleSheets()">Salin untuk Google Sheets</button>
-      </div>
-
-      <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
-        <h4 style="font-size: 13px; font-weight: 700; color: var(--accent-white);">3. Upload / Impor Spreadsheet (.CSV)</h4>
-        <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Pilih file spreadsheet untuk memasukkan data secara massal ke dalam dompet pribadimu.</p>
-        <input type="file" id="spreadsheetFileInput" accept=".csv,.txt" style="display: none;" onchange="handleSpreadsheetUpload(this)">
-        <button class="btn btn-outline btn-sm btn-block" onclick="document.getElementById('spreadsheetFileInput').click()">Pilih File Spreadsheet (.CSV)</button>
-        <a href="javascript:void(0)" onclick="downloadKasTemplate()" style="font-size: 11px; color: var(--text-secondary); text-align: center; text-decoration: underline;">Unduh Template Spreadsheet (.CSV)</a>
+        <button class="btn btn-outline btn-sm btn-block" onclick="copyTableForGoogleSheets()">Salin untuk Google Sheets</button>
       </div>
     </div>
   </div>
@@ -1740,7 +2181,7 @@
   <div class="modal-backdrop" id="modalBackup" onclick="closeModalOnBackdrop(event, 'modalBackup')">
     <div class="modal-container">
       <div class="modal-header"><h3>Cadangkan & Pulihkan Data</h3><button class="close-btn" onclick="closeModal('modalBackup')">✕</button></div>
-      <p style="font-size: 12px; color: var(--text-secondary);">Salin atau unduh seluruh data tugas, materi, dan catatan keuangan pribadi agar tidak hilang.</p>
+      <p style="font-size: 12px; color: var(--text-secondary);">Salin atau unduh seluruh data tugas, materi, akun presensi/BBO, dan catatan keuangan pribadi agar tidak hilang.</p>
       <textarea id="backupTextarea" class="form-control" rows="8" readonly></textarea>
       <div style="display: flex; gap: 8px;">
         <button class="btn btn-primary btn-sm btn-block" onclick="copyBackupData()">Salin JSON</button>
@@ -1789,22 +2230,24 @@
       ]
     };
 
-    /* Minimal valid PDF byte stream (displays Class X.5 document header) */
+    /* Minimal valid PDF byte stream */
     const SAMPLE_MINIMAL_PDF_BASE64 = "JVBERi0xLjQKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgNCAwIFIKL1Jlc291cmNlcyA8PAovRm9udCA8PAovRjEgNSAwIFIKPj4KPj4KPj4KZW5kb2JqCjQgMCBvYmoKPDwKL0xlbmd0aCAxMjkKPj4Kc3RyZWFtCkJUCi9GMSAyNCBUZgoxMDAgNzAwIFRkCihDTEFTUyBYLjUgU01BTiAzIEpPTUJBTkcpIFRqCjAgLTMwIFRkCi9GMSAxNCBUZgooTWF0ZXJpIFJhbmdrdW1hbiAmIFBQVCBTaXN3YSkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovQmFzZUZvbnQgL0hlbHZldGljYQo+PgplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAowMDAwMDAwMjQ5IDAwMDAwIG4gCjAwMDAwMDA0MjkgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA2Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgowMDAwMDAwNTEyCiUlRU9GCg==";
 
-    /* Keys */
+    /* Storage Keys */
     const STORAGE_KEY_TASKS = "x5_smaga_tasks_v2";
     const STORAGE_KEY_KAS = "x5_smaga_kas_pribadi_v2";
     const STORAGE_KEY_MATERIALS_META = "x5_smaga_materials_meta_v2";
     const STORAGE_KEY_HOURLY_SPAM = "x5_hourly_spam_settings";
     const STORAGE_KEY_DAILY_ROUTINE = "x5_daily_routine_settings";
+    const STORAGE_KEY_ACCOUNTS = "x5_smaga_school_accounts_v1";
+    const STORAGE_KEY_ATTENDANCE = "x5_smaga_attendance_reminder_v1";
     const IDB_NAME = "x5_materials_files_db";
     const IDB_STORE = "documents";
 
-    /* IndexedDB for offline documents (PPT, PDF, DOC) */
+    /* IndexedDB for offline documents (Stores robust Data URLs/Objects) */
     function openIDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open(IDB_NAME, 1);
+        const req = indexedDB.open(IDB_NAME, 2);
         req.onupgradeneeded = (e) => {
           const db = e.target.result;
           if (!db.objectStoreNames.contains(IDB_STORE)) {
@@ -1816,11 +2259,11 @@
       });
     }
 
-    async function storeFileInIDB(id, blobOrBuffer) {
+    async function storeFileInIDB(id, fileRecord) {
       const db = await openIDB();
       return new Promise((resolve, reject) => {
         const tx = db.transaction(IDB_STORE, "readwrite");
-        tx.objectStore(IDB_STORE).put(blobOrBuffer, id);
+        tx.objectStore(IDB_STORE).put(fileRecord, id);
         tx.oncomplete = () => resolve(true);
         tx.onerror = () => reject(tx.error);
       });
@@ -1846,18 +2289,19 @@
       });
     }
 
-    /* Convert Blob to Base64 */
-    function blobToBase64(blob) {
+    /* Helper: Read File as Data URL (Base64) */
+    function readFileAsDataURL(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
+        reader.onload = () => resolve(reader.result);
         reader.onerror = reject;
-        reader.readAsDataURL(blob);
+        reader.readAsDataURL(file);
       });
     }
 
     function base64ToBlob(base64, mimeType = "application/pdf") {
-      const byteChars = atob(base64);
+      const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
+      const byteChars = atob(cleanBase64);
       const byteNums = new Array(byteChars.length);
       for (let i = 0; i < byteChars.length; i++) {
         byteNums[i] = byteChars.charCodeAt(i);
@@ -1879,6 +2323,9 @@
         case 'jpeg': return 'image/jpeg';
         case 'webp': return 'image/webp';
         case 'txt': return 'text/plain';
+        case 'xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        case 'xls': return 'application/vnd.ms-excel';
+        case 'csv': return 'text/csv';
         default: return 'application/octet-stream';
       }
     }
@@ -1900,30 +2347,60 @@
       materials: [],
       hourlySpam: { enabled: true, lastSpamTimestamp: 0 },
       dailyRoutine: { enabled: true, time: "06:00", lastNotifiedDate: "" },
+      attendanceReminder: { enabled: true, morningTime: "06:30", afternoonTime: "15:00", lastMorningDate: "", lastAfternoonDate: "" },
+      schoolAccounts: {
+        absenLokasi: { username: "", password: "", label: "Absen Lokasi" },
+        absenWajah: { username: "", password: "", label: "Absen Wajah" },
+        bboLms: { username: "", password: "", label: "BBO LMS" }
+      },
       currentViewingDoc: null
     };
 
-    let selectedUploadFile = null;
+    let selectedUploadFiles = [];
+    let currentPdfDoc = null;
+    let currentPdfPage = 1;
 
     /* Load Data from Storage */
     function loadStorageData() {
-      // 1. Tasks
+      // 1. Tasks (3 Realistic Tasks)
       try {
         const rawTasks = localStorage.getItem(STORAGE_KEY_TASKS);
-        if (rawTasks) state.tasks = JSON.parse(rawTasks);
-        else {
-          const tomorrow = new Date();
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          tomorrow.setHours(7, 30, 0, 0);
-          state.tasks = [{
-            id: "task-1",
-            title: "Latihan Soal Matematika Bab 3",
-            subject: "Matematika",
-            deadline: tomorrow.toISOString().slice(0, 16),
-            notes: "Kerjakan nomor 1-10 di buku tugas berpetak.",
-            completed: false, notifiedNightBefore: false, notifiedUrgent: false,
-            createdAt: new Date().toISOString()
-          }];
+        if (rawTasks) {
+          state.tasks = JSON.parse(rawTasks);
+        } else {
+          const d1 = new Date(); d1.setDate(d1.getDate() + 1); d1.setHours(7, 0, 0, 0);
+          const d2 = new Date(); d2.setDate(d2.getDate() + 2); d2.setHours(11, 0, 0, 0);
+          const d3 = new Date(); d3.setDate(d3.getDate() + 3); d3.setHours(13, 0, 0, 0);
+
+          state.tasks = [
+            {
+              id: "task-1",
+              title: "Latihan Soal Matematika Bab 3 (Trigonometri)",
+              subject: "Matematika",
+              deadline: d1.toISOString().slice(0, 16),
+              notes: "Kerjakan nomor 1 - 10 di buku tugas berpetak. Dari Bu Laora Dessy Andhini, S.Pd.",
+              completed: false, notifiedNightBefore: false, notifiedUrgent: false,
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "task-2",
+              title: "Laporan Hasil Pengamatan Struktur Sel Tumbuhan",
+              subject: "Biologi",
+              deadline: d2.toISOString().slice(0, 16),
+              notes: "Gambar sel bawang merah & daun Rhoeo discolor beserta keterangan fungsinya. Dari Drs. Ali Akhmat Makhali, M.Pd.",
+              completed: false, notifiedNightBefore: false, notifiedUrgent: false,
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: "task-3",
+              title: "Analisis Unsur Intrinsik Cerpen & Sinopsis",
+              subject: "B. Indonesia",
+              deadline: d3.toISOString().slice(0, 16),
+              notes: "Tulis di kertas folio bergaris rapi. Dari Ibu Titik Nurkhayati, S.Pd.",
+              completed: false, notifiedNightBefore: false, notifiedUrgent: false,
+              createdAt: new Date().toISOString()
+            }
+          ];
           saveTasks();
         }
       } catch (e) { state.tasks = []; }
@@ -1974,9 +2451,12 @@
             }
           ];
           saveMaterials();
-          // Store default PDF into IDB so it opens smoothly on first click
-          const defaultPdfBlob = base64ToBlob(SAMPLE_MINIMAL_PDF_BASE64, "application/pdf");
-          storeFileInIDB("mat-2", defaultPdfBlob).catch(() => {});
+          storeFileInIDB("mat-2", {
+            data: "data:application/pdf;base64," + SAMPLE_MINIMAL_PDF_BASE64,
+            name: "Materi_Fungsi_Kuadrat_KelasX.pdf",
+            type: "pdf",
+            size: 1200000
+          }).catch(() => {});
         }
       } catch (e) { state.materials = []; }
 
@@ -1992,7 +2472,19 @@
         if (rawDaily) state.dailyRoutine = JSON.parse(rawDaily);
       } catch (e) {}
 
-      // Sync UI switches
+      // 6. School Accounts
+      try {
+        const rawAcc = localStorage.getItem(STORAGE_KEY_ACCOUNTS);
+        if (rawAcc) state.schoolAccounts = JSON.parse(rawAcc);
+      } catch (e) {}
+
+      // 7. Attendance Reminders
+      try {
+        const rawAtt = localStorage.getItem(STORAGE_KEY_ATTENDANCE);
+        if (rawAtt) state.attendanceReminder = JSON.parse(rawAtt);
+      } catch (e) {}
+
+      // Sync UI switches & credential cards
       const spamToggle = document.getElementById("toggleHourlySpam");
       if (spamToggle) spamToggle.checked = !!state.hourlySpam.enabled;
 
@@ -2001,19 +2493,34 @@
 
       const routineSelect = document.getElementById("selectDailyRoutineTime");
       if (routineSelect && state.dailyRoutine.time) routineSelect.value = state.dailyRoutine.time;
+
+      const attToggle = document.getElementById("toggleAttendanceReminder");
+      if (attToggle) attToggle.checked = !!state.attendanceReminder.enabled;
+
+      renderSchoolAccounts();
     }
 
     function saveTasks() { localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(state.tasks)); renderTasks(); updateTaskStats(); }
     function saveKas() { localStorage.setItem(STORAGE_KEY_KAS, JSON.stringify(state.kasTransactions)); renderKas(); updateKasSummary(); }
     function saveMaterials() { localStorage.setItem(STORAGE_KEY_MATERIALS_META, JSON.stringify(state.materials)); renderMaterials(); }
+    function saveSchoolAccounts() { localStorage.setItem(STORAGE_KEY_ACCOUNTS, JSON.stringify(state.schoolAccounts)); renderSchoolAccounts(); }
+    function saveAttendanceSettings() { localStorage.setItem(STORAGE_KEY_ATTENDANCE, JSON.stringify(state.attendanceReminder)); }
 
     function switchTab(tabId, el) {
-      state.activeTab = tabId;
+      const realId = tabId.startsWith("tab") ? tabId : ("tab" + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      state.activeTab = realId;
       document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
       document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
-      const target = document.getElementById(tabId);
+      const target = document.getElementById(realId);
       if (target) target.classList.add("active");
       if (el) el.classList.add("active");
+      else {
+        const matchingBtn = document.querySelector(`.nav-item[onclick*="${tabId}"]`) || document.querySelector(`.nav-item[onclick*="${realId}"]`);
+        if (matchingBtn) matchingBtn.classList.add("active");
+      }
+      if (realId === "tabPresensi") {
+        refreshAttendanceStatusBadges();
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -2030,18 +2537,18 @@
       return map[key] || key;
     }
 
-    /* Bug Fix: Weekend & Day Detection */
+    /* Weekend & Day Detection */
     function detectCurrentDay() {
       const now = new Date();
-      const dayIndex = now.getDay(); // 0 = Minggu, 1 = Senin, 2 = Selasa, 3 = Rabu, 4 = Kamis, 5 = Jumat, 6 = Sabtu
+      const dayIndex = now.getDay();
       const isWeekend = (dayIndex === 0 || dayIndex === 6);
       
       const dayMap = { 1: "SENIN", 2: "SELASA", 3: "RABU", 4: "KAMIS", 5: "JUMAT" };
-      const detected = dayMap[dayIndex] || "SENIN"; // default view to Senin on weekend
+      const detected = dayMap[dayIndex] || "SENIN";
       
       state.selectedDay = detected;
       state.isWeekend = isWeekend;
-      state.todayKey = dayMap[dayIndex] || null; // null on Saturday and Sunday
+      state.todayKey = dayMap[dayIndex] || null;
 
       const dayNamesId = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu"];
       const monthsId = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -2100,12 +2607,10 @@
       const currentMin = now.getHours() * 60 + now.getMinutes();
       const dayIndex = now.getDay();
       const dayKeyMap = { 1: "SENIN", 2: "SELASA", 3: "RABU", 4: "KAMIS", 5: "JUMAT" };
-      const realTodayKey = dayKeyMap[dayIndex] || null; // null on Saturday (6) and Sunday (0)
+      const realTodayKey = dayKeyMap[dayIndex] || null;
       
-      // CRITICAL FIX: isToday is strictly false on Saturday and Sunday!
       const isToday = (realTodayKey !== null && realTodayKey === state.selectedDay);
 
-      // Show or hide the weekend explanation banner
       if (weekendBox) {
         if (dayIndex === 0 || dayIndex === 6) {
           weekendBox.style.display = "flex";
@@ -2149,7 +2654,7 @@
       }).join('');
     }
 
-    /* Notification Management (Web API + Native AndroidBridge) */
+    /* Notification Management */
     function checkNotificationStatus() {
       const badge = document.getElementById("permBadge");
       const btn = document.getElementById("btnRequestNotif");
@@ -2210,7 +2715,14 @@
       }
     }
 
-    /* Hourly Spam Nagging Feature */
+    function toggleSettingsAccordion() {
+      const header = document.getElementById("accordionSettingsHeader");
+      const body = document.getElementById("accordionSettingsBody");
+      header.classList.toggle("open");
+      body.classList.toggle("open");
+    }
+
+    /* Hourly Spam Nagging */
     function toggleHourlySpam(isChecked) {
       state.hourlySpam.enabled = isChecked;
       localStorage.setItem(STORAGE_KEY_HOURLY_SPAM, JSON.stringify(state.hourlySpam));
@@ -2234,7 +2746,7 @@
     function checkHourlySpamReminders() {
       if (!state.hourlySpam || !state.hourlySpam.enabled) return;
       const incomplete = state.tasks.filter(t => !t.completed);
-      if (incomplete.length === 0) return; // All tasks finished!
+      if (incomplete.length === 0) return;
 
       const nowMs = Date.now();
       const oneHourMs = 60 * 60 * 1000;
@@ -2269,7 +2781,7 @@
       if (!state.dailyRoutine || !state.dailyRoutine.enabled) return;
       const now = new Date();
       const todayDateStr = now.toISOString().slice(0, 10);
-      if (state.dailyRoutine.lastNotifiedDate === todayDateStr) return; // already sent today
+      if (state.dailyRoutine.lastNotifiedDate === todayDateStr) return;
 
       const [targetHour, targetMin] = (state.dailyRoutine.time || "06:00").split(":").map(Number);
       if (now.getHours() === targetHour && now.getMinutes() >= targetMin) {
@@ -2293,37 +2805,7 @@
       }
     }
 
-    /* Standard Task Reminders (19.00 night before and 2 hours before) */
-    function checkAndTriggerTaskReminders() {
-      const now = new Date();
-      let hasChanges = false;
-      state.tasks.forEach(task => {
-        if (task.completed) return;
-        const deadlineDate = new Date(task.deadline);
-        if (isNaN(deadlineDate.getTime())) return;
-        const nightBefore = new Date(deadlineDate);
-        nightBefore.setDate(nightBefore.getDate() - 1);
-        nightBefore.setHours(19, 0, 0, 0);
-
-        if (now >= nightBefore && now < deadlineDate && !task.notifiedNightBefore) {
-          const hh = String(deadlineDate.getHours()).padStart(2, '0');
-          const mm = String(deadlineDate.getMinutes()).padStart(2, '0');
-          sendSystemNotification("🔔 Pengingat Tugas X-5: Besok Deadline!", `Tugas "${task.title}" (${task.subject}) harus selesai besok pukul ${hh}:${mm} WIB.`);
-          task.notifiedNightBefore = true;
-          hasChanges = true;
-        }
-
-        const twoHoursBefore = new Date(deadlineDate.getTime() - 2 * 60 * 60 * 1000);
-        if (now >= twoHoursBefore && now < deadlineDate && !task.notifiedUrgent) {
-          sendSystemNotification("⚠️ Tugas Mendesak CLASS X.5!", `Tugas "${task.title}" (${task.subject}) tenggat waktunya kurang dari 2 jam lagi!`);
-          task.notifiedUrgent = true;
-          hasChanges = true;
-        }
-      });
-      if (hasChanges) saveTasks();
-    }
-
-    /* Tasks UI & Management */
+    /* Tasks Management & List Rendering (FRONT & CENTER!) */
     function setTaskFilter(filter, el) {
       state.taskFilter = filter;
       document.querySelectorAll("#tabTasks .filter-chip").forEach(c => c.classList.remove("active"));
@@ -2337,6 +2819,8 @@
       document.getElementById("statTotalTasks").textContent = total;
       document.getElementById("statPendingTasks").textContent = total - done;
       document.getElementById("statDoneTasks").textContent = done;
+      const countBadge = document.getElementById("taskTotalCountBadge");
+      if (countBadge) countBadge.textContent = `${total - done} Belum Selesai`;
     }
 
     function renderTasks() {
@@ -2348,7 +2832,12 @@
       filtered.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="empty-state"><p>Tidak ada tugas di kategori ini.</p></div>`;
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>Tidak ada tugas di kategori ini.</p>
+            <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()" style="margin-top: 8px;">+ Tambah Tugas Baru</button>
+          </div>
+        `;
         return;
       }
 
@@ -2442,7 +2931,288 @@
       }
     }
 
-    /* Materi & Rangkuman PPT & Opening PDF/Documents */
+    function checkAndTriggerTaskReminders() {
+      const now = new Date();
+      let hasChanges = false;
+      state.tasks.forEach(task => {
+        if (task.completed) return;
+        const deadlineDate = new Date(task.deadline);
+        if (isNaN(deadlineDate.getTime())) return;
+        const nightBefore = new Date(deadlineDate);
+        nightBefore.setDate(nightBefore.getDate() - 1);
+        nightBefore.setHours(19, 0, 0, 0);
+
+        if (now >= nightBefore && now < deadlineDate && !task.notifiedNightBefore) {
+          const hh = String(deadlineDate.getHours()).padStart(2, '0');
+          const mm = String(deadlineDate.getMinutes()).padStart(2, '0');
+          sendSystemNotification("🔔 Pengingat Tugas X-5: Besok Deadline!", `Tugas "${task.title}" (${task.subject}) harus selesai besok pukul ${hh}:${mm} WIB.`);
+          task.notifiedNightBefore = true;
+          hasChanges = true;
+        }
+
+        const twoHoursBefore = new Date(deadlineDate.getTime() - 2 * 60 * 60 * 1000);
+        if (now >= twoHoursBefore && now < deadlineDate && !task.notifiedUrgent) {
+          sendSystemNotification("⚠️ Tugas Mendesak CLASS X.5!", `Tugas "${task.title}" (${task.subject}) tenggat waktunya kurang dari 2 jam lagi!`);
+          task.notifiedUrgent = true;
+          hasChanges = true;
+        }
+      });
+      if (hasChanges) saveTasks();
+    }
+
+    /* PRESENSI ONLINE & BBO LMS SMAN 3 JOMBANG */
+    function renderSchoolAccounts() {
+      const acc = state.schoolAccounts;
+
+      const uLokasi = acc.absenLokasi?.username || "";
+      const pLokasi = acc.absenLokasi?.password || "";
+      document.getElementById("credUserLokasi").textContent = uLokasi ? uLokasi : "Belum diisi (Klik Edit Akun)";
+      document.getElementById("credPassLokasi").textContent = pLokasi ? "••••••••" : "Belum diisi";
+
+      const uWajah = acc.absenWajah?.username || "";
+      const pWajah = acc.absenWajah?.password || "";
+      document.getElementById("credUserWajah").textContent = uWajah ? uWajah : "Belum diisi (Klik Edit Akun)";
+      document.getElementById("credPassWajah").textContent = pWajah ? "••••••••" : "Belum diisi";
+
+      const uBbo = acc.bboLms?.username || "";
+      const pBbo = acc.bboLms?.password || "";
+      document.getElementById("credUserBbo").textContent = uBbo ? uBbo : "Belum diisi (Klik Edit Akun)";
+      document.getElementById("credPassBbo").textContent = pBbo ? "••••••••" : "Belum diisi";
+    }
+
+    function openEditAccountModal(key, title) {
+      document.getElementById("editAccountKey").value = key;
+      document.getElementById("editAccountModalTitle").textContent = `Edit Akun: ${title}`;
+      const acc = state.schoolAccounts[key] || { username: "", password: "" };
+      document.getElementById("editAccountUsername").value = acc.username || "";
+      document.getElementById("editAccountPassword").value = acc.password || "";
+      openModal("modalEditAccount");
+    }
+
+    function handleSaveAccount(e) {
+      e.preventDefault();
+      const key = document.getElementById("editAccountKey").value;
+      const username = document.getElementById("editAccountUsername").value.trim();
+      const password = document.getElementById("editAccountPassword").value.trim();
+
+      if (!state.schoolAccounts[key]) state.schoolAccounts[key] = {};
+      state.schoolAccounts[key].username = username;
+      state.schoolAccounts[key].password = password;
+
+      saveSchoolAccounts();
+      closeModal("modalEditAccount");
+      showToast("Akun berhasil disimpan! Sekarang kamu bisa salin satu klik.");
+    }
+
+    function togglePasswordVisibility(id) {
+      const input = document.getElementById(id);
+      if (input.type === "password") input.type = "text";
+      else input.type = "password";
+    }
+
+    function copyAccountCredential(key, field, label) {
+      const acc = state.schoolAccounts[key];
+      const val = acc ? acc[field] : "";
+      if (!val) {
+        showToast(`${label} belum diisi. Silakan klik tombol 'Edit Akun' terlebih dahulu.`, "error");
+        return;
+      }
+
+      if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+        window.AndroidBridge.copyToClipboard(label, val);
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(val).then(() => {
+          showToast(`${label} berhasil disalin ke clipboard!`);
+        }).catch(() => {
+          fallbackClipboard(val, label);
+        });
+      } else {
+        fallbackClipboard(val, label);
+      }
+    }
+
+    function fallbackClipboard(val, label) {
+      const ta = document.createElement("textarea");
+      ta.value = val;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      showToast(`${label} berhasil disalin!`);
+    }
+
+    function openExternalPortal(url, name) {
+      showToast(`Membuka ${name}...`);
+      if (window.AndroidBridge && window.AndroidBridge.openBrowser) {
+        window.AndroidBridge.openBrowser(url);
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    }
+
+    function toggleAttendanceReminder(isChecked) {
+      state.attendanceReminder.enabled = isChecked;
+      saveAttendanceSettings();
+      if (window.AndroidBridge && window.AndroidBridge.scheduleAttendanceAlarms) {
+        window.AndroidBridge.scheduleAttendanceAlarms();
+      }
+      showToast(isChecked ? "Pengingat Absen Online Aktif!" : "Pengingat Absen Online Dinonaktifkan.");
+    }
+
+    function refreshAttendanceStatusBadges() {
+      const today = new Date().toISOString().slice(0, 10);
+      let pagiStatus = "belum";
+      let soreStatus = "belum";
+
+      if (window.AndroidBridge && window.AndroidBridge.getAttendanceStatus) {
+        try {
+          pagiStatus = window.AndroidBridge.getAttendanceStatus("pagi") || "belum";
+          soreStatus = window.AndroidBridge.getAttendanceStatus("sore") || "belum";
+        } catch (e) {}
+      } else {
+        pagiStatus = localStorage.getItem(`x5_absen_pagi_${today}`) || "belum";
+        soreStatus = localStorage.getItem(`x5_absen_sore_${today}`) || "belum";
+      }
+
+      updateAttendanceBadgeUI("badgeStatusPagi", pagiStatus);
+      updateAttendanceBadgeUI("badgeStatusSore", soreStatus);
+    }
+
+    function updateAttendanceBadgeUI(badgeId, status) {
+      const el = document.getElementById(badgeId);
+      if (!el) return;
+      if (status === "sudah") {
+        el.className = "status-tag active";
+        el.textContent = "✅ Sudah Absen";
+        el.style.background = "rgba(34, 197, 94, 0.18)";
+        el.style.color = "#4ade80";
+        el.style.borderColor = "rgba(34, 197, 94, 0.35)";
+      } else if (status === "tidak_masuk") {
+        el.className = "status-tag";
+        el.textContent = "❌ Tidak Masuk / Izin";
+        el.style.background = "rgba(239, 68, 68, 0.18)";
+        el.style.color = "#f87171";
+        el.style.borderColor = "rgba(239, 68, 68, 0.35)";
+      } else {
+        el.className = "status-tag";
+        el.textContent = "⏳ Belum Absen (Alarm 5 mnt)";
+        el.style.background = "rgba(234, 179, 8, 0.15)";
+        el.style.color = "#facc15";
+        el.style.borderColor = "rgba(234, 179, 8, 0.35)";
+      }
+    }
+
+    function setAttendanceStatusFromUI(session, status) {
+      const today = new Date().toISOString().slice(0, 10);
+      if (window.AndroidBridge && window.AndroidBridge.setAttendanceStatus) {
+        window.AndroidBridge.setAttendanceStatus(session, status);
+      } else {
+        localStorage.setItem(`x5_absen_${session}_${today}`, status);
+        refreshAttendanceStatusBadges();
+      }
+      const label = status === "sudah" ? "Sudah Absen" : "Tidak Masuk";
+      const sName = session === "pagi" ? "Pagi" : "Pulang";
+      showToast(`Status Presensi ${sName} dicatat: ${label}. Pengingat otomatis dihentikan.`);
+    }
+
+    function resetAttendanceStatusFromUI(session) {
+      const today = new Date().toISOString().slice(0, 10);
+      if (window.AndroidBridge && window.AndroidBridge.resetAttendanceStatus) {
+        window.AndroidBridge.resetAttendanceStatus(session);
+      } else {
+        localStorage.removeItem(`x5_absen_${session}_${today}`);
+        refreshAttendanceStatusBadges();
+      }
+      showToast(`Status presensi direset. Pengingat aktif kembali.`);
+    }
+
+    function testAttendanceNotification(session = 'pagi') {
+      if (window.AndroidBridge && window.AndroidBridge.testAttendanceNotification) {
+        window.AndroidBridge.testAttendanceNotification(session);
+        showToast("Notifikasi presensi dikirim! Buka notifikasi HP dan coba klik 'Sudah Absen' atau 'Tidak Masuk'.");
+      } else {
+        sendSystemNotification(
+          "📍 [TEST] WAKTUNYA PRESENSI ONLINE SMAN 3 JOMBANG!",
+          "Segera buka Absen Lokasi atau Absen Wajah. Di HP, kamu bisa klik 'Sudah Absen' atau 'Tidak Masuk' langsung di notifikasi!"
+        );
+        showToast("Notifikasi presensi online telah diuji coba!");
+      }
+    }
+
+    window.onAttendanceStatusUpdated = function(pagi, sore, today) {
+      updateAttendanceBadgeUI("badgeStatusPagi", pagi);
+      updateAttendanceBadgeUI("badgeStatusSore", sore);
+    };
+
+    let lastMorningNotifTime = 0;
+    let lastAfternoonNotifTime = 0;
+
+    function checkAttendanceReminders() {
+      if (!state.attendanceReminder || !state.attendanceReminder.enabled) return;
+      const now = new Date();
+      const dayIndex = now.getDay();
+      if (dayIndex === 0 || dayIndex === 6) return; // Libur akhir pekan (Sabtu & Minggu)
+
+      const curHour = now.getHours();
+      const curMin = now.getMinutes();
+      const nowMinutes = curHour * 60 + curMin;
+      const todayStr = now.toISOString().slice(0, 10);
+
+      // Sesi Pagi: 06:30 - 07:00 (390 - 420)
+      if (nowMinutes >= 390 && nowMinutes <= 420) {
+        let status = "belum";
+        if (window.AndroidBridge && window.AndroidBridge.getAttendanceStatus) {
+          status = window.AndroidBridge.getAttendanceStatus("pagi");
+        } else {
+          status = localStorage.getItem(`x5_absen_pagi_${todayStr}`) || "belum";
+        }
+
+        if (status !== "sudah" && status !== "tidak_masuk") {
+          // Ulang setiap 5 menit
+          if (Date.now() - lastMorningNotifTime >= 5 * 60 * 1000) {
+            lastMorningNotifTime = Date.now();
+            if (window.AndroidBridge && window.AndroidBridge.testAttendanceNotification) {
+              window.AndroidBridge.testAttendanceNotification("pagi");
+            } else {
+              sendSystemNotification(
+                "📍 PENGINGAT PRESENSI PAGI (06.30 - 07.00)",
+                "Waktunya presensi online! Klik 'Sudah Absen' atau 'Tidak Masuk' di notifikasi untuk menghentikan pengingat ini."
+              );
+            }
+          }
+        }
+      }
+
+      // Sesi Pulang: 15:00 - 15:30 (900 - 930)
+      if (nowMinutes >= 900 && nowMinutes <= 930) {
+        let status = "belum";
+        if (window.AndroidBridge && window.AndroidBridge.getAttendanceStatus) {
+          status = window.AndroidBridge.getAttendanceStatus("sore");
+        } else {
+          status = localStorage.getItem(`x5_absen_sore_${todayStr}`) || "belum";
+        }
+
+        if (status !== "sudah" && status !== "tidak_masuk") {
+          // Ulang setiap 5 menit
+          if (Date.now() - lastAfternoonNotifTime >= 5 * 60 * 1000) {
+            lastAfternoonNotifTime = Date.now();
+            if (window.AndroidBridge && window.AndroidBridge.testAttendanceNotification) {
+              window.AndroidBridge.testAttendanceNotification("sore");
+            } else {
+              sendSystemNotification(
+                "📍 PENGINGAT PRESENSI PULANG (15.00 - 15.30)",
+                "Waktunya presensi pulang sekolah! Klik 'Sudah Absen' atau 'Tidak Masuk' di notifikasi untuk menghentikan pengingat ini."
+              );
+            }
+          }
+        }
+      }
+    }
+
+    /* MATERI, PPT, DAN LIHAT DOKUMEN (DUKUNGAN 2 ATAU LEBIH PDF DALAM 1 MATERI) */
     function detectFileType(fileName) {
       if (!fileName) return 'text';
       const ext = fileName.split('.').pop().toLowerCase();
@@ -2477,7 +3247,8 @@
           m.title.toLowerCase().includes(state.materialSearchQuery) ||
           m.subject.toLowerCase().includes(state.materialSearchQuery) ||
           (m.notes && m.notes.toLowerCase().includes(state.materialSearchQuery)) ||
-          (m.fileName && m.fileName.toLowerCase().includes(state.materialSearchQuery))
+          (m.fileName && m.fileName.toLowerCase().includes(state.materialSearchQuery)) ||
+          (m.files && m.files.some(f => f.name.toLowerCase().includes(state.materialSearchQuery)))
         );
       }
       filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
@@ -2490,8 +3261,11 @@
 
       container.innerHTML = filtered.map(item => {
         const typeClass = item.type || detectFileType(item.fileName);
-        const typeLabel = typeClass.toUpperCase();
-        const fileSubtext = item.fileName ? `${item.fileName} • ${item.fileSize || ''}` : `Rangkuman Teks • ${item.content ? item.content.length + ' karakter' : ''}`;
+        const hasMultiple = item.files && item.files.length > 1;
+        const typeLabel = hasMultiple ? `${item.files.length}F` : typeClass.toUpperCase();
+        const fileSubtext = hasMultiple
+          ? `${item.files.length} File Terlampir • Total ${item.fileSize || ''}`
+          : (item.fileName ? `${item.fileName} • ${item.fileSize || ''}` : `Catatan Teks • ${item.content ? item.content.length + ' karakter' : ''}`);
 
         return `
           <div class="material-card">
@@ -2507,13 +3281,26 @@
               </div>
             </div>
             ${item.notes ? `<div class="material-desc">${escapeHtml(item.notes)}</div>` : ''}
+
+            ${hasMultiple ? `
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px 0;">
+                ${item.files.map(f => `
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="openOrDownloadMaterial('${item.id}', '${f.id}')" style="font-size: 11px; padding: 4px 8px; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px;">
+                    <span class="file-chip-type ${f.type}" style="font-size: 9px; padding: 2px 4px; border-radius: 4px;">${f.type.toUpperCase()}</span>
+                    <span style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">${escapeHtml(f.name)}</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">${f.size || ''}</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+
             <div class="material-actions">
               ${item.type === 'text' ? `
-                <button class="btn btn-secondary btn-sm" onclick="viewSummaryText('${item.id}')">Baca Rangkuman</button>
+                <button class="btn btn-secondary btn-sm" onclick="viewSummaryText('${item.id}')">Baca Catatan</button>
               ` : `
                 <button class="btn btn-primary btn-sm" onclick="openOrDownloadMaterial('${item.id}')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                  Buka Dokumen / PDF
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  ${hasMultiple ? `Buka Materi (${item.files.length} File)` : 'Lihat / Buka Dokumen'}
                 </button>
               `}
               <button class="delete-btn" title="Hapus Materi" onclick="deleteMaterial('${item.id}')">
@@ -2526,7 +3313,7 @@
     }
 
     function openAddMaterialModal(mode = 'file') {
-      clearSelectedFile();
+      clearSelectedFiles();
       document.getElementById("materialTitle").value = "";
       document.getElementById("materialSubject").selectedIndex = 0;
       document.getElementById("materialNotes").value = "";
@@ -2543,23 +3330,67 @@
       document.getElementById("sectionTextNotes").style.display = mode === 'text' ? 'flex' : 'none';
     }
 
-    function handleFileSelected(input) {
-      if (input.files && input.files[0]) {
-        selectedUploadFile = input.files[0];
-        document.getElementById("selectedFileName").textContent = `${selectedUploadFile.name} (${formatBytes(selectedUploadFile.size)})`;
-        document.getElementById("selectedFileBadge").style.display = "flex";
-        if (!document.getElementById("materialTitle").value) {
-          const rawName = selectedUploadFile.name.replace(/\.[^/.]+$/, "");
-          document.getElementById("materialTitle").value = rawName.replace(/_/g, ' ');
+    function handleFilesSelected(input) {
+      if (input.files && input.files.length > 0) {
+        for (let i = 0; i < input.files.length; i++) {
+          const file = input.files[i];
+          if (!selectedUploadFiles.some(f => f.name === file.name && f.size === file.size)) {
+            selectedUploadFiles.push(file);
+          }
+        }
+        renderSelectedFilesList();
+        const titleInput = document.getElementById("materialTitle");
+        if (!titleInput.value && selectedUploadFiles.length > 0) {
+          const rawName = selectedUploadFiles[0].name.replace(/\.[^/.]+$/, "");
+          titleInput.value = rawName.replace(/_/g, ' ');
         }
       }
+      input.value = "";
     }
 
-    function clearSelectedFile(e) {
+    function renderSelectedFilesList() {
+      const container = document.getElementById("selectedFilesContainer");
+      if (!container) return;
+      if (selectedUploadFiles.length === 0) {
+        container.style.display = "none";
+        container.innerHTML = "";
+        return;
+      }
+      container.style.display = "flex";
+      container.innerHTML = `
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 2px;">
+          ${selectedUploadFiles.length} File Terpilih (Siap Disimpan):
+        </div>
+        ${selectedUploadFiles.map((file, idx) => `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 7px 10px; font-size: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <span class="file-chip-type ${detectFileType(file.name)}" style="font-size: 9px; padding: 2px 5px; border-radius: 4px;">${detectFileType(file.name).toUpperCase()}</span>
+              <span style="color: var(--accent-white); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(file.name)}</span>
+              <span style="color: var(--text-muted); font-size: 10px;">(${formatBytes(file.size)})</span>
+            </div>
+            <button type="button" class="close-btn" style="color: var(--text-muted); font-size: 14px; padding: 4px;" onclick="removeSelectedFile(${idx})">✕</button>
+          </div>
+        `).join('')}
+        <div style="margin-top: 4px;">
+          <label for="materialFileInput" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; margin: 0; font-size: 11px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            + Tambah File Lainnya
+          </label>
+        </div>
+      `;
+    }
+
+    function removeSelectedFile(idx) {
+      selectedUploadFiles.splice(idx, 1);
+      renderSelectedFilesList();
+    }
+
+    function clearSelectedFiles(e) {
       if (e) e.stopPropagation();
-      selectedUploadFile = null;
-      document.getElementById("materialFileInput").value = "";
-      document.getElementById("selectedFileBadge").style.display = "none";
+      selectedUploadFiles = [];
+      const input = document.getElementById("materialFileInput");
+      if (input) input.value = "";
+      renderSelectedFilesList();
     }
 
     function formatBytes(bytes) {
@@ -2570,6 +3401,7 @@
       return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
 
+    /* Upload Handling with Multi-File Base64 Data URL Storage */
     async function handleAddMaterial(e) {
       e.preventDefault();
       const title = document.getElementById("materialTitle").value.trim();
@@ -2583,114 +3415,264 @@
       }
 
       if (state.materialMode === "file") {
-        if (!selectedUploadFile) {
-          showToast("Silakan pilih file PPT / PDF dokumen terlebih dahulu.", "error");
+        if (selectedUploadFiles.length === 0) {
+          showToast("Silakan pilih minimal 1 file PPT / PDF dokumen terlebih dahulu.", "error");
           return;
         }
-        const id = "mat-" + Date.now();
-        const detectedType = detectFileType(selectedUploadFile.name);
-        await storeFileInIDB(id, selectedUploadFile);
+        showToast(`Menyimpan ${selectedUploadFiles.length} file dokumen...`, "info");
+        try {
+          const id = "mat-" + Date.now();
+          const filesList = [];
 
-        state.materials.unshift({
-          id, title, subject, type: detectedType,
-          fileName: selectedUploadFile.name, fileSize: formatBytes(selectedUploadFile.size),
-          hasBlob: true, notes, date: dateStr
-        });
-        saveMaterials();
-        closeModal("modalAddMaterial");
-        showToast(`File "${selectedUploadFile.name}" berhasil disimpan!`);
+          for (let i = 0; i < selectedUploadFiles.length; i++) {
+            const file = selectedUploadFiles[i];
+            const detectedType = detectFileType(file.name);
+            const dataUrl = await readFileAsDataURL(file);
+            const fileId = `${id}-f${i + 1}`;
+            filesList.push({
+              id: fileId,
+              name: file.name,
+              type: detectedType,
+              size: file.size,
+              sizeFormatted: formatBytes(file.size),
+              data: dataUrl
+            });
+          }
+
+          // Save to IndexedDB (with backwards compatible single-file props)
+          await storeFileInIDB(id, {
+            id,
+            files: filesList,
+            data: filesList[0].data,
+            name: filesList[0].name,
+            type: filesList[0].type,
+            size: filesList[0].size
+          });
+
+          const totalSize = filesList.reduce((acc, cur) => acc + cur.size, 0);
+
+          state.materials.unshift({
+            id,
+            title,
+            subject,
+            type: filesList[0].type,
+            filesCount: filesList.length,
+            files: filesList.map(f => ({
+              id: f.id,
+              name: f.name,
+              type: f.type,
+              size: f.sizeFormatted
+            })),
+            fileName: filesList.length === 1 ? filesList[0].name : `${filesList.length} File Terlampir (${filesList.map(f => f.name).join(', ')})`,
+            fileSize: formatBytes(totalSize),
+            hasBlob: true,
+            notes,
+            date: dateStr
+          });
+
+          saveMaterials();
+          closeModal("modalAddMaterial");
+          showToast(`Materi dengan ${filesList.length} file berhasil disimpan!`);
+        } catch (err) {
+          showToast("Gagal menyimpan file: " + err.message, "error");
+        }
       } else {
         const content = document.getElementById("materialTextContent").value.trim();
         if (!content) {
-          showToast("Tuliskan isi rangkuman pelajaran terlebih dahulu.", "error");
+          showToast("Tuliskan isi catatan pelajaran terlebih dahulu.", "error");
           return;
         }
         state.materials.unshift({ id: "mat-" + Date.now(), title, subject, type: "text", content, notes, date: dateStr });
         saveMaterials();
         closeModal("modalAddMaterial");
-        showToast("Rangkuman materi berhasil disimpan!");
+        showToast("Catatan materi berhasil disimpan!");
       }
     }
 
-    /* Robust Opening of PDF and PPT files */
-    async function openOrDownloadMaterial(id) {
+    /* Open Document with Multi-File Switching, PDF.js Canvas Preview & Native Launcher */
+    async function openOrDownloadMaterial(id, targetFileId = null) {
       const item = state.materials.find(m => m.id === id);
       if (!item) return;
 
-      let fileData = await getFileFromIDB(id);
-      
-      // If sample file without stored blob, provide fallback blob so it opens seamlessly
-      if (!fileData) {
+      showToast("Mempersiapkan dokumen...", "info");
+      let record = await getFileFromIDB(id);
+
+      // Default sample fallback if no IDB record exists yet
+      if (!record || (!record.data && (!record.files || record.files.length === 0))) {
+        let defaultData = "";
         if (item.fileName && item.fileName.toLowerCase().endsWith(".pdf")) {
-          fileData = base64ToBlob(SAMPLE_MINIMAL_PDF_BASE64, "application/pdf");
+          defaultData = "data:application/pdf;base64," + SAMPLE_MINIMAL_PDF_BASE64;
         } else {
-          const sampleText = `CLASS X.5 SMA NEGERI 3 JOMBANG\n\nDokumen: ${item.title}\nMata Pelajaran: ${item.subject}\nCatatan: ${item.notes || '-'}\n\nSilakan unggah file presentasi PPT / PDF asli dari bapak/ibu guru untuk menggantikan template ini.`;
-          fileData = new Blob([sampleText], { type: "text/plain" });
+          defaultData = "data:text/plain;charset=utf-8," + encodeURIComponent(`CLASS X.5 SMA NEGERI 3 JOMBANG\n\nDokumen: ${item.title}\nMata Pelajaran: ${item.subject}\nCatatan: ${item.notes || '-'}\n\nSilakan unggah file presentasi PPT / PDF asli dari bapak/ibu guru.`);
         }
-        await storeFileInIDB(id, fileData);
+        record = { data: defaultData, name: item.fileName || "dokumen.pdf", type: item.type || "pdf", size: 50000 };
+        await storeFileInIDB(id, record);
       }
 
-      const mimeType = getMimeType(item.fileName);
-      const blob = fileData instanceof Blob ? fileData : new Blob([fileData], { type: mimeType });
-      
-      state.currentViewingDoc = { item, blob, mimeType };
+      // Check if this record has multiple files or single file
+      let activeFile = null;
+      if (record.files && record.files.length > 0) {
+        activeFile = targetFileId ? (record.files.find(f => f.id === targetFileId) || record.files[0]) : record.files[0];
+      } else {
+        activeFile = {
+          id: id + "-f1",
+          name: record.name || item.fileName || "dokumen.pdf",
+          type: record.type || item.type || detectFileType(record.name),
+          size: record.size || 50000,
+          sizeFormatted: item.fileSize || formatBytes(record.size),
+          data: record.data
+        };
+      }
 
-      // Set modal UI
+      const mimeType = getMimeType(activeFile.name);
+      state.currentViewingDoc = { item, record, activeFile, mimeType };
+
       document.getElementById("docModalTitle").textContent = item.title;
       document.getElementById("docModalSubject").textContent = item.subject;
-      document.getElementById("docModalSize").textContent = item.fileSize || formatBytes(blob.size);
+      document.getElementById("docModalSize").textContent = activeFile.sizeFormatted || formatBytes(activeFile.size);
+
+      // Render Multi-File Tab Switcher if 2 or more files exist
+      const tabsContainer = document.getElementById("docFileTabsContainer");
+      if (tabsContainer) {
+        if (record.files && record.files.length > 1) {
+          tabsContainer.style.display = "flex";
+          tabsContainer.innerHTML = `
+            <div style="display: flex; gap: 6px; overflow-x: auto; width: 100%; padding-bottom: 6px; margin-bottom: 6px; border-bottom: 1px solid var(--border-subtle);">
+              ${record.files.map((f, idx) => `
+                <button type="button" class="btn btn-sm ${f.id === activeFile.id ? 'btn-primary' : 'btn-secondary'}" onclick="openOrDownloadMaterial('${id}', '${f.id}')" style="white-space: nowrap; font-size: 11px; padding: 5px 10px; border-radius: 8px;">
+                  ${idx + 1}. [${f.type.toUpperCase()}] ${escapeHtml(f.name)}
+                </button>
+              `).join('')}
+            </div>
+          `;
+        } else {
+          tabsContainer.style.display = "none";
+          tabsContainer.innerHTML = "";
+        }
+      }
 
       const viewerContainer = document.getElementById("docViewerContainer");
-      const isPdf = mimeType === 'application/pdf' || (item.fileName && item.fileName.toLowerCase().endsWith(".pdf"));
+      const isPdf = mimeType === 'application/pdf' || activeFile.name.toLowerCase().endsWith(".pdf");
 
       if (isPdf) {
-        const blobUrl = URL.createObjectURL(blob);
         viewerContainer.innerHTML = `
-          <div class="doc-viewer-frame">
-            <iframe src="${blobUrl}#toolbar=0" title="PDF Viewer"></iframe>
+          <div class="pdf-viewer-box">
+            <div class="pdf-canvas-container">
+              <canvas id="pdfCanvas"></canvas>
+            </div>
+            <div class="pdf-nav-bar">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="changePdfPage(-1)">◀ Sebelumnya</button>
+              <span id="pdfPageIndicator" style="font-size: 11px; font-weight: 700; color: var(--text-primary);">Halaman 1</span>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="changePdfPage(1)">Selanjutnya ▶</button>
+            </div>
           </div>
         `;
+        renderPdfInCanvas(activeFile.data);
       } else {
         viewerContainer.innerHTML = `
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-            <div class="file-type-icon ${item.type || 'ppt'}" style="width: 50px; height: 50px; font-size: 14px;">${(item.type || 'PPT').toUpperCase()}</div>
-            <h4 style="font-size: 14px; font-weight: 700; color: var(--accent-white);">${escapeHtml(item.fileName || item.title)}</h4>
-            <p style="font-size: 12px; color: var(--text-secondary);">File presentasi/dokumen siap dibuka menggunakan aplikasi reader favoritmu (Microsoft PowerPoint, Google Slides, WPS Office, atau Drive).</p>
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 22px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div class="file-type-icon ${activeFile.type || 'ppt'}" style="width: 52px; height: 52px; font-size: 14px;">${(activeFile.type || 'PPT').toUpperCase()}</div>
+            <h4 style="font-size: 15px; font-weight: 700; color: var(--accent-white);">${escapeHtml(activeFile.name)}</h4>
+            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.45;">File dokumen siap dibuka langsung menggunakan aplikasi PowerPoint atau WPS Office di HP kamu.</p>
           </div>
         `;
       }
 
-      // Configure Actions
-      document.getElementById("btnLaunchExternalDoc").onclick = async () => {
-        showToast("Membuka dengan aplikasi pembaca dokumen...");
-        const base64 = await blobToBase64(blob);
+      // External App Launcher for Active File
+      document.getElementById("btnLaunchExternalDoc").onclick = () => {
+        showToast("Membuka dokumen " + activeFile.name + "...");
+        const base64Data = activeFile.data;
         if (window.AndroidBridge && window.AndroidBridge.openFile) {
-          window.AndroidBridge.openFile(base64, mimeType, item.fileName || "dokumen_x5.pdf");
+          window.AndroidBridge.openFile(base64Data, mimeType, activeFile.name);
         } else {
-          // Web fallback
+          // Web fallback download / open
+          const blob = base64ToBlob(base64Data, mimeType);
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
           a.target = "_blank";
-          a.download = item.fileName || "dokumen_x5.pdf";
+          a.download = activeFile.name;
           document.body.appendChild(a);
           a.click();
           a.remove();
         }
       };
 
+      // Download Button for Active File
       document.getElementById("btnDownloadDoc").onclick = () => {
+        const blob = base64ToBlob(activeFile.data, mimeType);
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = item.fileName || "dokumen_x5.pdf";
+        a.download = activeFile.name;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        showToast(`Mengunduh ${item.fileName}...`);
+        showToast(`Mengunduh ${activeFile.name}...`);
       };
 
       openModal("modalViewDocument");
+    }
+
+    /* PDF.js Page Rendering */
+    async function renderPdfInCanvas(dataUrlOrBytes) {
+      const canvas = document.getElementById("pdfCanvas");
+      if (!canvas || !window.pdfjsLib) return;
+
+      try {
+        let pdfData = dataUrlOrBytes;
+        if (typeof dataUrlOrBytes === "string" && dataUrlOrBytes.includes(",")) {
+          const b64 = dataUrlOrBytes.split(",")[1];
+          const binStr = atob(b64);
+          const bytes = new Uint8Array(binStr.length);
+          for (let i = 0; i < binStr.length; i++) {
+            bytes[i] = binStr.charCodeAt(i);
+          }
+          pdfData = bytes;
+        }
+
+        const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+        currentPdfDoc = await loadingTask.promise;
+        currentPdfPage = 1;
+        renderPdfCurrentPage();
+      } catch (err) {
+        console.error("PDF.js render error", err);
+        const ind = document.getElementById("pdfPageIndicator");
+        if (ind) ind.textContent = "Ketuk 'Buka di Aplikasi Luar' untuk membaca PDF";
+      }
+    }
+
+    async function renderPdfCurrentPage() {
+      if (!currentPdfDoc) return;
+      const canvas = document.getElementById("pdfCanvas");
+      const indicator = document.getElementById("pdfPageIndicator");
+      if (!canvas) return;
+
+      try {
+        const page = await currentPdfDoc.getPage(currentPdfPage);
+        const viewport = page.getViewport({ scale: 1.35 });
+        const context = canvas.getContext("2d");
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = { canvasContext: context, viewport: viewport };
+        await page.render(renderContext).promise;
+
+        if (indicator) {
+          indicator.textContent = `Halaman ${currentPdfPage} dari ${currentPdfDoc.numPages}`;
+        }
+      } catch (e) {
+        console.error("Failed to render page", e);
+      }
+    }
+
+    function changePdfPage(delta) {
+      if (!currentPdfDoc) return;
+      const target = currentPdfPage + delta;
+      if (target >= 1 && target <= currentPdfDoc.numPages) {
+        currentPdfPage = target;
+        renderPdfCurrentPage();
+      }
     }
 
     function viewSummaryText(id) {
@@ -2712,7 +3694,7 @@
       }
     }
 
-    /* Keuangan Pribadi Siswa */
+    /* KEUANGAN PRIBADI & ROBUST SPREADSHEET (XLSX, XLS, CSV) */
     function formatRupiah(num) {
       return "Rp " + Number(num || 0).toLocaleString("id-ID");
     }
@@ -2818,6 +3800,123 @@
 
     function openSpreadsheetModal() { openModal("modalSpreadsheet"); }
 
+    /* Universal Spreadsheet Upload (.XLSX, .XLS, .CSV) powered by SheetJS */
+    function handleSpreadsheetUpload(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      showToast(`Membaca spreadsheet ${file.name}...`, "info");
+      const isXlsx = file.name.match(/\.(xlsx|xls)$/i);
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          let rows = [];
+          if (window.XLSX) {
+            let workbook;
+            if (isXlsx) {
+              const data = new Uint8Array(e.target.result);
+              workbook = XLSX.read(data, { type: 'array' });
+            } else {
+              const text = e.target.result;
+              workbook = XLSX.read(text, { type: 'string' });
+            }
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+          } else {
+            const text = e.target.result;
+            rows = text.split(/\r?\n/).map(parseCSVRow);
+          }
+
+          if (!rows || rows.length < 2) {
+            showToast("File spreadsheet kosong atau tidak berisi data.", "error");
+            return;
+          }
+
+          let addedCount = 0;
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
+
+            let date = "";
+            let desc = "";
+            let cat = "Keuangan Pribadi";
+            let type = "income";
+            let amount = 0;
+
+            if (row.length >= 4) {
+              date = String(row[1] || "").trim();
+              desc = String(row[2] || "").trim();
+              cat = String(row[3] || "Keuangan Pribadi").trim();
+              const typeStr = String(row[4] || "").toLowerCase();
+              const inVal = parseFloat(String(row[5] || "0").replace(/[^0-9.-]/g, '')) || 0;
+              const outVal = parseFloat(String(row[6] || "0").replace(/[^0-9.-]/g, '')) || 0;
+
+              if (inVal > 0) {
+                type = "income";
+                amount = inVal;
+              } else if (outVal > 0) {
+                type = "expense";
+                amount = outVal;
+              } else {
+                const singleNominal = parseFloat(String(row[3] || row[4] || row[2] || "0").replace(/[^0-9.-]/g, '')) || 0;
+                amount = singleNominal;
+                type = (typeStr.includes("keluar") || typeStr.includes("expense") || typeStr.includes("pengeluaran")) ? "expense" : "income";
+              }
+            } else if (row.length >= 2) {
+              desc = String(row[0] || "").trim();
+              amount = parseFloat(String(row[1] || "0").replace(/[^0-9.-]/g, '')) || 0;
+              type = "expense";
+            }
+
+            if (amount > 0 && desc) {
+              state.kasTransactions.push({
+                id: "kas-" + Date.now() + "-" + i,
+                type: type,
+                amount: amount,
+                desc: desc,
+                category: cat || "Keuangan Pribadi",
+                date: (date && !isNaN(new Date(date).getTime())) ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
+              });
+              addedCount++;
+            }
+          }
+
+          if (addedCount > 0) {
+            saveKas();
+            closeModal("modalSpreadsheet");
+            showToast(`Berhasil mengimpor ${addedCount} catatan keuangan dari ${file.name}!`);
+          } else {
+            showToast("Format baris spreadsheet tidak cocok. Gunakan template yang disediakan.", "error");
+          }
+        } catch (err) {
+          showToast("Gagal membaca file spreadsheet: " + err.message, "error");
+        }
+      };
+
+      if (isXlsx) {
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.readAsText(file);
+      }
+      input.value = "";
+    }
+
+    function parseCSVRow(row) {
+      let result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < row.length; i++) {
+        const c = row[i];
+        if (c === '"') { inQuotes = !inQuotes; }
+        else if (c === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+        else { current += c; }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
     function downloadKasSpreadsheet() {
       if (state.kasTransactions.length === 0) {
         showToast("Belum ada data catatan keuangan untuk diekspor.", "error");
@@ -2863,83 +3962,6 @@
       });
     }
 
-    function handleSpreadsheetUpload(input) {
-      const file = input.files && input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const text = e.target.result;
-          const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-          if (lines.length < 2) {
-            showToast("File spreadsheet kosong atau tidak valid.", "error");
-            return;
-          }
-          let addedCount = 0;
-          for (let i = 1; i < lines.length; i++) {
-            const row = parseCSVRow(lines[i]);
-            if (row.length >= 4) {
-              const date = row[1] ? row[1].trim() : "";
-              const desc = row[2] ? row[2].trim() : "";
-              const cat = row[3] ? row[3].trim() : "Keuangan Pribadi";
-              const typeStr = (row[4] || "").toLowerCase();
-              const inVal = parseFloat(String(row[5] || "0").replace(/[^0-9.-]/g, '')) || 0;
-              const outVal = parseFloat(String(row[6] || "0").replace(/[^0-9.-]/g, '')) || 0;
-
-              let type = "income";
-              let amount = 0;
-              if (inVal > 0) {
-                type = "income"; amount = inVal;
-              } else if (outVal > 0) {
-                type = "expense"; amount = outVal;
-              } else {
-                const singleNominal = parseFloat(String(row[2] || row[3] || "0").replace(/[^0-9.-]/g, '')) || 0;
-                amount = singleNominal;
-                type = typeStr.includes("keluar") || typeStr.includes("expense") ? "expense" : "income";
-              }
-
-              if (amount > 0 && desc) {
-                state.kasTransactions.push({
-                  id: "kas-" + Date.now() + "-" + i,
-                  type: type,
-                  amount: amount,
-                  desc: desc.replace(/^"|"$/g, ''),
-                  category: cat.replace(/^"|"$/g, '') || "Keuangan Pribadi",
-                  date: (date && !isNaN(new Date(date).getTime())) ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
-                });
-                addedCount++;
-              }
-            }
-          }
-          if (addedCount > 0) {
-            saveKas();
-            closeModal("modalSpreadsheet");
-            showToast(`Berhasil mengimpor ${addedCount} catatan keuangan!`);
-          } else {
-            showToast("Format baris spreadsheet tidak cocok.", "error");
-          }
-        } catch (err) {
-          showToast("Gagal membaca file: " + err.message, "error");
-        }
-      };
-      reader.readAsText(file);
-      input.value = "";
-    }
-
-    function parseCSVRow(row) {
-      let result = [];
-      let current = '';
-      let inQuotes = false;
-      for (let i = 0; i < row.length; i++) {
-        const c = row[i];
-        if (c === '"') { inQuotes = !inQuotes; }
-        else if (c === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
-        else { current += c; }
-      }
-      result.push(current.trim());
-      return result;
-    }
-
     function downloadKasTemplate() {
       const template = "No,Tanggal,Keterangan,Kategori,Jenis,Uang Masuk (Rp),Uang Keluar (Rp),Saldo (Rp)\r\n" +
         "1,2026-11-01,\"Uang Saku Mingguan Ortu\",\"Uang Saku / Jajan (Ortu)\",Uang Masuk,100000,0,100000\r\n" +
@@ -2983,8 +4005,10 @@
         tasks: state.tasks,
         materials: state.materials,
         keuanganPribadi: state.kasTransactions,
+        schoolAccounts: state.schoolAccounts,
         hourlySpam: state.hourlySpam,
-        dailyRoutine: state.dailyRoutine
+        dailyRoutine: state.dailyRoutine,
+        attendanceReminder: state.attendanceReminder
       }, null, 2);
       openModal("modalBackup");
     }
@@ -3004,26 +4028,42 @@
       showToast("File cadangan diunduh.");
     }
 
-    /* Initialize Application on DOM Ready */
-    document.addEventListener("DOMContentLoaded", () => {
-      loadStorageData();
-      startClock();
-      detectCurrentDay();
-      checkNotificationStatus();
-      updateTaskStats();
-      updateKasSummary();
-      renderMaterials();
+    /* Initialize Application */
+    function initApp() {
+      try {
+        loadStorageData();
+        startClock();
+        detectCurrentDay();
+        renderTasks();
+        renderKas();
+        renderMaterials();
+        updateTaskStats();
+        updateKasSummary();
+        checkNotificationStatus();
+        refreshAttendanceStatusBadges();
 
-      // Notification loops
-      checkAndTriggerTaskReminders();
-      checkHourlySpamReminders();
-      checkDailyRoutineReminder();
+        // Notification loops
+        checkAndTriggerTaskReminders();
+        checkHourlySpamReminders();
+        checkDailyRoutineReminder();
+        checkAttendanceReminders();
 
-      // Periodic check intervals
-      setInterval(checkAndTriggerTaskReminders, 30000); // every 30s
-      setInterval(checkHourlySpamReminders, 60000);      // check every 1 minute
-      setInterval(checkDailyRoutineReminder, 60000);     // check every 1 minute
-    });
+        // Periodic check intervals
+        setInterval(checkAndTriggerTaskReminders, 30000);
+        setInterval(checkHourlySpamReminders, 60000);
+        setInterval(checkDailyRoutineReminder, 60000);
+        setInterval(checkAttendanceReminders, 30000);
+        setInterval(refreshAttendanceStatusBadges, 15000);
+      } catch (err) {
+        console.error("Initialization error:", err);
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+      initApp();
+    }
   </script>
 </body>
 </html>
